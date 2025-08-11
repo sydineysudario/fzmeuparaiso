@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,66 +9,35 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @media print {
-            body {
-                font-size: 12px;
-            }
-
-            .no-print {
-                display: none;
-            }
+            body { font-size: 12px; }
+            .no-print { display: none; }
         }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .chart-container {
-            height: 300px;
-        }
-
-        input[readonly] {
-            background-color: #f9f9f9;
-        }
-
-        .editable {
-            background-color: #fef3c7 !important;
-        }
-
-        .positive {
-            color: #059669;
-        }
-
-        .negative {
-            color: #dc2626;
-        }
-
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .chart-container { height: 300px; }
+        input[readonly] { background-color: #f9f9f9; }
+        .editable { background-color: #fef3c7 !important; }
+        .positive { color: #059669; }
+        .negative { color: #dc2626; }
+        
         .login-container {
             min-height: 100vh;
             background: linear-gradient(135deg, #4ade80 0%, #22c55e 50%, #16a34a 100%);
         }
-
         .login-box {
             backdrop-filter: blur(10px);
             background: rgba(255, 255, 255, 0.95);
         }
-
         .main-system {
             display: none;
         }
-
         .main-system.authenticated {
             display: block;
         }
-
         .logo-container {
             max-width: 120px;
             max-height: 80px;
         }
-
         .logo-container img {
             width: 100%;
             height: 100%;
@@ -77,15 +45,13 @@
         }
     </style>
 </head>
-
 <body class="bg-gray-50 font-sans">
     <!-- Tela de Login -->
     <div id="loginScreen" class="login-container flex items-center justify-center p-4">
         <div class="login-box max-w-md w-full p-8 rounded-2xl shadow-2xl border border-white/20">
             <div class="text-center mb-8">
                 <div class="logo-container mx-auto mb-4">
-                    <img src="https://i.postimg.cc/Y0cB4Km2/Chat-GPT-Image-11-08-2025-13-05-16.png" alt="Logo Fazenda"
-                        class="mx-auto">
+                    <img src="https://i.postimg.cc/Y0cB4Km2/Chat-GPT-Image-11-08-2025-13-05-16.png" alt="Logo Fazenda" class="mx-auto">
                 </div>
                 <h1 class="text-3xl font-bold text-gray-800 mb-2">
                     <i class="fas fa-seedling text-green-600 mr-2"></i>
@@ -93,45 +59,43 @@
                 </h1>
                 <p class="text-gray-600">Sistema de Gestão Integrado</p>
             </div>
-
+            
             <form id="loginForm" class="space-y-6">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Usuário</label>
                     <div class="relative">
-                        <input type="text" id="username" required
-                            class="w-full p-4 pl-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition duration-200"
-                            placeholder="Digite seu usuário">
+                        <input type="text" id="username" required 
+                               class="w-full p-4 pl-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition duration-200"
+                               placeholder="Digite seu usuário">
                         <i class="fas fa-user absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                     </div>
                 </div>
-
+                
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Senha</label>
                     <div class="relative">
-                        <input type="password" id="password" required
-                            class="w-full p-4 pl-12 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition duration-200"
-                            placeholder="Digite sua senha">
+                        <input type="password" id="password" required 
+                               class="w-full p-4 pl-12 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition duration-200"
+                               placeholder="Digite sua senha">
                         <i class="fas fa-lock absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                        <button type="button" onclick="togglePassword()"
-                            class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                        <button type="button" onclick="togglePassword()" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
                             <i class="fas fa-eye" id="toggleIcon"></i>
                         </button>
                     </div>
                 </div>
-
-                <button type="submit"
-                    class="w-full bg-gradient-to-r from-green-500 to-green-600 text-white p-4 rounded-lg font-medium hover:from-green-600 hover:to-green-700 transform hover:scale-105 transition duration-200 shadow-lg">
+                
+                <button type="submit" 
+                        class="w-full bg-gradient-to-r from-green-500 to-green-600 text-white p-4 rounded-lg font-medium hover:from-green-600 hover:to-green-700 transform hover:scale-105 transition duration-200 shadow-lg">
                     <i class="fas fa-sign-in-alt mr-2"></i>
                     Entrar no Sistema
                 </button>
             </form>
-
-            <div id="loginError"
-                class="hidden mt-4 p-4 bg-red-100 border border-red-300 text-red-700 rounded-lg text-center">
+            
+            <div id="loginError" class="hidden mt-4 p-4 bg-red-100 border border-red-300 text-red-700 rounded-lg text-center">
                 <i class="fas fa-exclamation-triangle mr-2"></i>
                 Usuário ou senha incorretos!
             </div>
-
+            
             <div class="mt-8 text-center text-sm text-gray-500">
                 <p>Sistema de Gestão - Fazenda de Mandioca</p>
                 <p>Controle Completo para Atingir a Meta de R$ 1.000.000</p>
@@ -146,8 +110,7 @@
             <div class="flex items-center justify-between">
                 <div class="flex items-center">
                     <div class="logo-container mr-4">
-                        <img src="https://i.postimg.cc/Y0cB4Km2/Chat-GPT-Image-11-08-2025-13-05-16.png"
-                            alt="Logo Fazenda" class="rounded-lg">
+                        <img src="https://i.postimg.cc/Y0cB4Km2/Chat-GPT-Image-11-08-2025-13-05-16.png" alt="Logo Fazenda" class="rounded-lg">
                     </div>
                     <div>
                         <h1 class="text-3xl font-bold flex items-center">
@@ -160,8 +123,7 @@
                 <div class="text-right">
                     <div class="flex items-center mb-2">
                         <span class="text-sm mr-3">Usuário: <strong id="currentUser"></strong></span>
-                        <button onclick="logout()"
-                            class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm transition duration-200">
+                        <button onclick="logout()" class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm transition duration-200">
                             <i class="fas fa-sign-out-alt mr-1"></i>Sair
                         </button>
                     </div>
@@ -177,57 +139,41 @@
         <!-- Navigation Tabs -->
         <div class="bg-white rounded-lg shadow-sm mb-6">
             <div class="flex flex-wrap border-b overflow-x-auto">
-                <button
-                    class="tab-btn px-6 py-3 font-medium text-gray-600 border-b-2 border-transparent hover:text-green-600 hover:border-green-600 active"
-                    data-tab="propriedade">
+                <button class="tab-btn px-6 py-3 font-medium text-gray-600 border-b-2 border-transparent hover:text-green-600 hover:border-green-600 active" data-tab="propriedade">
                     <i class="fas fa-home mr-2"></i>Dados da Propriedade
                 </button>
-                <button
-                    class="tab-btn px-6 py-3 font-medium text-gray-600 border-b-2 border-transparent hover:text-green-600 hover:border-green-600"
-                    data-tab="investimentos">
+                <button class="tab-btn px-6 py-3 font-medium text-gray-600 border-b-2 border-transparent hover:text-green-600 hover:border-green-600" data-tab="investimentos">
                     <i class="fas fa-money-bill-wave mr-2"></i>Investimentos
                 </button>
-                <button
-                    class="tab-btn px-6 py-3 font-medium text-gray-600 border-b-2 border-transparent hover:text-green-600 hover:border-green-600"
-                    data-tab="producao">
+                <button class="tab-btn px-6 py-3 font-medium text-gray-600 border-b-2 border-transparent hover:text-green-600 hover:border-green-600" data-tab="producao">
                     <i class="fas fa-seedling mr-2"></i>Produção
                 </button>
-                <button
-                    class="tab-btn px-6 py-3 font-medium text-gray-600 border-b-2 border-transparent hover:text-green-600 hover:border-green-600"
-                    data-tab="estoque">
+                <button class="tab-btn px-6 py-3 font-medium text-gray-600 border-b-2 border-transparent hover:text-green-600 hover:border-green-600" data-tab="estoque">
                     <i class="fas fa-boxes mr-2"></i>Estoque
                 </button>
-                <button
-                    class="tab-btn px-6 py-3 font-medium text-gray-600 border-b-2 border-transparent hover:text-green-600 hover:border-green-600"
-                    data-tab="pessoas">
+                <button class="tab-btn px-6 py-3 font-medium text-gray-600 border-b-2 border-transparent hover:text-green-600 hover:border-green-600" data-tab="pessoas">
                     <i class="fas fa-users mr-2"></i>Pessoas
                 </button>
-                <button
-                    class="tab-btn px-6 py-3 font-medium text-gray-600 border-b-2 border-transparent hover:text-green-600 hover:border-green-600"
-                    data-tab="vendas">
+                <button class="tab-btn px-6 py-3 font-medium text-gray-600 border-b-2 border-transparent hover:text-green-600 hover:border-green-600" data-tab="vendas">
                     <i class="fas fa-shopping-cart mr-2"></i>Vendas
                 </button>
-                <button
-                    class="tab-btn px-6 py-3 font-medium text-gray-600 border-b-2 border-transparent hover:text-green-600 hover:border-green-600"
-                    data-tab="dashboard">
+                <button class="tab-btn px-6 py-3 font-medium text-gray-600 border-b-2 border-transparent hover:text-green-600 hover:border-green-600" data-tab="dashboard">
                     <i class="fas fa-chart-line mr-2"></i>Dashboard
                 </button>
-                <button
-                    class="tab-btn px-6 py-3 font-medium text-gray-600 border-b-2 border-transparent hover:text-green-600 hover:border-green-600"
-                    data-tab="projecoes">
+                <button class="tab-btn px-6 py-3 font-medium text-gray-600 border-b-2 border-transparent hover:text-green-600 hover:border-green-600" data-tab="projecoes">
                     <i class="fas fa-crystal-ball mr-2"></i>Projeções
                 </button>
             </div>
         </div>
 
         <!-- Tab Contents -->
-
+        
         <!-- 1. Dados da Propriedade -->
         <div id="propriedade" class="tab-content active bg-white rounded-lg shadow-sm p-6">
             <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
                 <i class="fas fa-home text-green-600 mr-3"></i>Dados da Propriedade
             </h2>
-
+            
             <div class="grid md:grid-cols-2 gap-8">
                 <!-- Informações Gerais -->
                 <div>
@@ -237,31 +183,25 @@
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">Nome da Propriedade</label>
-                            <input type="text" id="nomePropriedade" class="w-full p-3 border rounded-lg editable"
-                                placeholder="Ex: Fazenda São João">
+                            <input type="text" id="nomePropriedade" class="w-full p-3 border rounded-lg editable" placeholder="Ex: Fazenda São João">
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-600 mb-1">Área (hectares)</label>
-                                <input type="number" id="areaHa" class="w-full p-3 border rounded-lg editable"
-                                    placeholder="0" onchange="calcularArea()">
+                                <input type="number" id="areaHa" class="w-full p-3 border rounded-lg editable" placeholder="0" onchange="calcularArea()">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-600 mb-1">Área (m²)</label>
-                                <input type="number" id="areaM2" class="w-full p-3 border rounded-lg bg-gray-100"
-                                    readonly>
+                                <input type="number" id="areaM2" class="w-full p-3 border rounded-lg bg-gray-100" readonly>
                             </div>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">Localização</label>
-                            <input type="text" id="localizacao" class="w-full p-3 border rounded-lg editable"
-                                placeholder="Cidade, Estado">
+                            <input type="text" id="localizacao" class="w-full p-3 border rounded-lg editable" placeholder="Cidade, Estado">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-600 mb-1">Valor Estimado da Terra
-                                (R$)</label>
-                            <input type="number" id="valorTerra" class="w-full p-3 border rounded-lg editable"
-                                placeholder="0,00" onchange="calcularInvestimentoTotal()">
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Valor Estimado da Terra (R$)</label>
+                            <input type="number" id="valorTerra" class="w-full p-3 border rounded-lg editable" placeholder="0,00" onchange="calcularInvestimentoTotal()">
                         </div>
                     </div>
                 </div>
@@ -274,34 +214,26 @@
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">Limpeza do Terreno (R$)</label>
-                            <input type="number" id="limpezaTerreno" class="w-full p-3 border rounded-lg editable"
-                                placeholder="0,00" onchange="calcularInvestimentoTotal()">
+                            <input type="number" id="limpezaTerreno" class="w-full p-3 border rounded-lg editable" placeholder="0,00" onchange="calcularInvestimentoTotal()">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">Insumos Agrícolas (R$)</label>
-                            <input type="number" id="insumosAgricolas" class="w-full p-3 border rounded-lg editable"
-                                placeholder="0,00" onchange="calcularInvestimentoTotal()">
+                            <input type="number" id="insumosAgricolas" class="w-full p-3 border rounded-lg editable" placeholder="0,00" onchange="calcularInvestimentoTotal()">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-600 mb-1">Ferramentas e Maquinário
-                                (R$)</label>
-                            <input type="number" id="ferramentasMaquinario"
-                                class="w-full p-3 border rounded-lg editable" placeholder="0,00"
-                                onchange="calcularInvestimentoTotal()">
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Ferramentas e Maquinário (R$)</label>
+                            <input type="number" id="ferramentasMaquinario" class="w-full p-3 border rounded-lg editable" placeholder="0,00" onchange="calcularInvestimentoTotal()">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">Infraestrutura (R$)</label>
-                            <input type="number" id="infraestrutura" class="w-full p-3 border rounded-lg editable"
-                                placeholder="0,00" onchange="calcularInvestimentoTotal()">
+                            <input type="number" id="infraestrutura" class="w-full p-3 border rounded-lg editable" placeholder="0,00" onchange="calcularInvestimentoTotal()">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">Mão de Obra Inicial (R$)</label>
-                            <input type="number" id="maoObraInicial" class="w-full p-3 border rounded-lg editable"
-                                placeholder="0,00" onchange="calcularInvestimentoTotal()">
+                            <input type="number" id="maoObraInicial" class="w-full p-3 border rounded-lg editable" placeholder="0,00" onchange="calcularInvestimentoTotal()">
                         </div>
                         <div class="bg-green-50 p-4 rounded-lg border border-green-200">
-                            <label class="block text-lg font-bold text-green-800 mb-1">Total de Investimento
-                                Inicial</label>
+                            <label class="block text-lg font-bold text-green-800 mb-1">Total de Investimento Inicial</label>
                             <div class="text-2xl font-bold text-green-600" id="totalInvestimento">R$ 0,00</div>
                         </div>
                     </div>
@@ -314,7 +246,7 @@
             <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
                 <i class="fas fa-money-bill-wave text-green-600 mr-3"></i>Investimentos - Fluxo de Caixa
             </h2>
-
+            
             <!-- Formulário de Adicionar Investimento -->
             <div class="bg-blue-50 p-6 rounded-lg mb-6">
                 <h3 class="text-lg font-semibold text-blue-800 mb-4">Adicionar Novo Investimento</h3>
@@ -325,8 +257,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Descrição</label>
-                        <input type="text" id="descricaoInvestimento" class="w-full p-2 border rounded-lg editable"
-                            placeholder="Descrição do gasto">
+                        <input type="text" id="descricaoInvestimento" class="w-full p-2 border rounded-lg editable" placeholder="Descrição do gasto">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Categoria</label>
@@ -342,8 +273,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Valor (R$)</label>
-                        <input type="number" id="valorInvestimento" class="w-full p-2 border rounded-lg editable"
-                            placeholder="0,00">
+                        <input type="number" id="valorInvestimento" class="w-full p-2 border rounded-lg editable" placeholder="0,00">
                     </div>
                 </div>
                 <div class="grid md:grid-cols-3 gap-4 mt-4">
@@ -356,12 +286,10 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Safra</label>
-                        <input type="text" id="safraInvestimento" class="w-full p-2 border rounded-lg editable"
-                            placeholder="Ex: 2024/1">
+                        <input type="text" id="safraInvestimento" class="w-full p-2 border rounded-lg editable" placeholder="Ex: 2024/1">
                     </div>
                     <div class="flex items-end">
-                        <button onclick="adicionarInvestimento()"
-                            class="w-full bg-green-600 text-white p-2 rounded-lg hover:bg-green-700 transition">
+                        <button onclick="adicionarInvestimento()" class="w-full bg-green-600 text-white p-2 rounded-lg hover:bg-green-700 transition">
                             <i class="fas fa-plus mr-2"></i>Adicionar
                         </button>
                     </div>
@@ -423,29 +351,24 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Área Plantada (ha)</label>
-                        <input type="number" id="areaPlantada" class="w-full p-2 border rounded-lg editable"
-                            placeholder="0">
+                        <input type="number" id="areaPlantada" class="w-full p-2 border rounded-lg editable" placeholder="0">
                     </div>
                 </div>
                 <div class="grid md:grid-cols-4 gap-4 mt-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Mandioca Colhida (kg)</label>
-                        <input type="number" id="mandiocaColhida" class="w-full p-2 border rounded-lg editable"
-                            placeholder="0" onchange="calcularProducao()">
+                        <input type="number" id="mandiocaColhida" class="w-full p-2 border rounded-lg editable" placeholder="0" onchange="calcularProducao()">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Farinha Produzida (kg)</label>
-                        <input type="number" id="farinhaProduzida" class="w-full p-2 border rounded-lg editable"
-                            placeholder="0" onchange="calcularProducao()">
+                        <input type="number" id="farinhaProduzida" class="w-full p-2 border rounded-lg editable" placeholder="0" onchange="calcularProducao()">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Custo Total da Safra (R$)</label>
-                        <input type="number" id="custoSafra" class="w-full p-2 border rounded-lg editable"
-                            placeholder="0,00" onchange="calcularProducao()">
+                        <input type="number" id="custoSafra" class="w-full p-2 border rounded-lg editable" placeholder="0,00" onchange="calcularProducao()">
                     </div>
                     <div class="flex items-end">
-                        <button onclick="adicionarProducao()"
-                            class="w-full bg-green-600 text-white p-2 rounded-lg hover:bg-green-700 transition">
+                        <button onclick="adicionarProducao()" class="w-full bg-green-600 text-white p-2 rounded-lg hover:bg-green-700 transition">
                             <i class="fas fa-plus mr-2"></i>Adicionar Safra
                         </button>
                     </div>
@@ -453,8 +376,7 @@
                 <div class="grid md:grid-cols-3 gap-4 mt-4 bg-white p-4 rounded border">
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Eficiência de Conversão</label>
-                        <input type="text" id="eficienciaConversao" class="w-full p-2 border rounded-lg bg-gray-100"
-                            readonly>
+                        <input type="text" id="eficienciaConversao" class="w-full p-2 border rounded-lg bg-gray-100" readonly>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Custo por kg</label>
@@ -508,22 +430,18 @@
                     <h3 class="text-lg font-semibold text-gray-700 mb-4 bg-blue-100 p-3 rounded">
                         <i class="fas fa-seedling mr-2"></i>Insumos Agrícolas
                     </h3>
-
+                    
                     <!-- Adicionar Insumo -->
                     <div class="bg-blue-50 p-4 rounded-lg mb-4">
                         <div class="grid grid-cols-2 gap-2 mb-2">
-                            <input type="text" id="nomeInsumo" class="p-2 border rounded editable"
-                                placeholder="Nome do insumo">
-                            <input type="number" id="quantidadeInsumo" class="p-2 border rounded editable"
-                                placeholder="Quantidade">
+                            <input type="text" id="nomeInsumo" class="p-2 border rounded editable" placeholder="Nome do insumo">
+                            <input type="number" id="quantidadeInsumo" class="p-2 border rounded editable" placeholder="Quantidade">
                         </div>
                         <div class="grid grid-cols-2 gap-2 mb-2">
                             <input type="date" id="validadeInsumo" class="p-2 border rounded editable">
-                            <input type="number" id="minimoInsumo" class="p-2 border rounded editable"
-                                placeholder="Estoque mínimo">
+                            <input type="number" id="minimoInsumo" class="p-2 border rounded editable" placeholder="Estoque mínimo">
                         </div>
-                        <button onclick="adicionarInsumo()"
-                            class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 transition">
+                        <button onclick="adicionarInsumo()" class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 transition">
                             <i class="fas fa-plus mr-2"></i>Adicionar Insumo
                         </button>
                     </div>
@@ -537,22 +455,19 @@
                     <h3 class="text-lg font-semibold text-gray-700 mb-4 bg-yellow-100 p-3 rounded">
                         <i class="fas fa-warehouse mr-2"></i>Farinha Armazenada
                     </h3>
-
+                    
                     <!-- Adicionar Lote de Farinha -->
                     <div class="bg-yellow-50 p-4 rounded-lg mb-4">
                         <div class="grid grid-cols-2 gap-2 mb-2">
                             <input type="text" id="loteId" class="p-2 border rounded editable" placeholder="ID do Lote">
-                            <input type="number" id="quantidadeFarinha" class="p-2 border rounded editable"
-                                placeholder="Quantidade (kg)">
+                            <input type="number" id="quantidadeFarinha" class="p-2 border rounded editable" placeholder="Quantidade (kg)">
                         </div>
                         <div class="grid grid-cols-2 gap-2 mb-2">
                             <input type="date" id="dataProducaoFarinha" class="p-2 border rounded editable">
                             <input type="date" id="validadeFarinha" class="p-2 border rounded editable">
                         </div>
-                        <input type="number" id="custoArmazenamento" class="w-full p-2 border rounded editable mb-2"
-                            placeholder="Custo de Armazenamento (R$)">
-                        <button onclick="adicionarFarinha()"
-                            class="w-full bg-yellow-600 text-white p-2 rounded hover:bg-yellow-700 transition">
+                        <input type="number" id="custoArmazenamento" class="w-full p-2 border rounded editable mb-2" placeholder="Custo de Armazenamento (R$)">
+                        <button onclick="adicionarFarinha()" class="w-full bg-yellow-600 text-white p-2 rounded hover:bg-yellow-700 transition">
                             <i class="fas fa-plus mr-2"></i>Adicionar Lote
                         </button>
                     </div>
@@ -583,8 +498,7 @@
                 <div class="grid md:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Nome</label>
-                        <input type="text" id="nomeFuncionario" class="w-full p-2 border rounded-lg editable"
-                            placeholder="Nome completo">
+                        <input type="text" id="nomeFuncionario" class="w-full p-2 border rounded-lg editable" placeholder="Nome completo">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Tipo</label>
@@ -595,19 +509,16 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Salário Mensal (R$)</label>
-                        <input type="number" id="salarioFuncionario" class="w-full p-2 border rounded-lg editable"
-                            placeholder="0,00">
+                        <input type="number" id="salarioFuncionario" class="w-full p-2 border rounded-lg editable" placeholder="0,00">
                     </div>
                 </div>
                 <div class="grid md:grid-cols-2 gap-4 mt-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Função</label>
-                        <input type="text" id="funcaoFuncionario" class="w-full p-2 border rounded-lg editable"
-                            placeholder="Ex: Operador de máquinas">
+                        <input type="text" id="funcaoFuncionario" class="w-full p-2 border rounded-lg editable" placeholder="Ex: Operador de máquinas">
                     </div>
                     <div class="flex items-end">
-                        <button onclick="adicionarFuncionario()"
-                            class="w-full bg-purple-600 text-white p-2 rounded-lg hover:bg-purple-700 transition">
+                        <button onclick="adicionarFuncionario()" class="w-full bg-purple-600 text-white p-2 rounded-lg hover:bg-purple-700 transition">
                             <i class="fas fa-user-plus mr-2"></i>Adicionar
                         </button>
                     </div>
@@ -647,12 +558,10 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Horas</label>
-                        <input type="number" id="horasTrabalhadas" class="w-full p-2 border rounded-lg editable"
-                            placeholder="8" step="0.5">
+                        <input type="number" id="horasTrabalhadas" class="w-full p-2 border rounded-lg editable" placeholder="8" step="0.5">
                     </div>
                     <div class="flex items-end">
-                        <button onclick="registrarHoras()"
-                            class="w-full bg-green-600 text-white p-2 rounded-lg hover:bg-green-700 transition">
+                        <button onclick="registrarHoras()" class="w-full bg-green-600 text-white p-2 rounded-lg hover:bg-green-700 transition">
                             <i class="fas fa-clock mr-2"></i>Registrar
                         </button>
                     </div>
@@ -692,42 +601,35 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Cliente</label>
-                        <input type="text" id="clienteVenda" class="w-full p-2 border rounded-lg editable"
-                            placeholder="Nome do cliente">
+                        <input type="text" id="clienteVenda" class="w-full p-2 border rounded-lg editable" placeholder="Nome do cliente">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Produto</label>
-                        <select id="produtoVenda" class="w-full p-2 border rounded-lg editable"
-                            onchange="calcularVenda()">
+                        <select id="produtoVenda" class="w-full p-2 border rounded-lg editable" onchange="calcularVenda()">
                             <option value="mandioca">Mandioca in natura</option>
                             <option value="farinha">Farinha de mandioca</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Quantidade (kg)</label>
-                        <input type="number" id="quantidadeVenda" class="w-full p-2 border rounded-lg editable"
-                            placeholder="0" onchange="calcularVenda()">
+                        <input type="number" id="quantidadeVenda" class="w-full p-2 border rounded-lg editable" placeholder="0" onchange="calcularVenda()">
                     </div>
                 </div>
                 <div class="grid md:grid-cols-4 gap-4 mt-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Preço Unitário (R$/kg)</label>
-                        <input type="number" id="precoUnitario" class="w-full p-2 border rounded-lg editable"
-                            placeholder="0,00" step="0.01" onchange="calcularVenda()">
+                        <input type="number" id="precoUnitario" class="w-full p-2 border rounded-lg editable" placeholder="0,00" step="0.01" onchange="calcularVenda()">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Valor Total</label>
-                        <input type="text" id="valorTotalVenda" class="w-full p-2 border rounded-lg bg-gray-100"
-                            readonly>
+                        <input type="text" id="valorTotalVenda" class="w-full p-2 border rounded-lg bg-gray-100" readonly>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Taxa Processamento</label>
-                        <input type="text" id="taxaProcessamento" class="w-full p-2 border rounded-lg bg-gray-100"
-                            readonly>
+                        <input type="text" id="taxaProcessamento" class="w-full p-2 border rounded-lg bg-gray-100" readonly>
                     </div>
                     <div class="flex items-end">
-                        <button onclick="adicionarVenda()"
-                            class="w-full bg-green-600 text-white p-2 rounded-lg hover:bg-green-700 transition">
+                        <button onclick="adicionarVenda()" class="w-full bg-green-600 text-white p-2 rounded-lg hover:bg-green-700 transition">
                             <i class="fas fa-plus mr-2"></i>Registrar Venda
                         </button>
                     </div>
@@ -885,8 +787,7 @@
             <div class="mt-8 bg-gray-50 p-6 rounded-lg">
                 <h3 class="text-lg font-semibold text-gray-700 mb-4">Progresso para Meta de R$ 1.000.000</h3>
                 <div class="w-full bg-gray-200 rounded-full h-6 mb-4">
-                    <div class="bg-gradient-to-r from-green-400 to-green-600 h-6 rounded-full transition-all duration-500"
-                        id="progressoMeta" style="width: 0%"></div>
+                    <div class="bg-gradient-to-r from-green-400 to-green-600 h-6 rounded-full transition-all duration-500" id="progressoMeta" style="width: 0%"></div>
                 </div>
                 <div class="flex justify-between text-sm text-gray-600">
                     <span>R$ 0</span>
@@ -912,19 +813,15 @@
                     <div class="space-y-3">
                         <div>
                             <label class="block text-sm font-medium text-red-600">Produtividade (kg/ha)</label>
-                            <input type="number" id="prodConservador" class="w-full p-2 border rounded editable"
-                                value="15000" onchange="calcularCenarios()">
+                            <input type="number" id="prodConservador" class="w-full p-2 border rounded editable" value="15000" onchange="calcularCenarios()">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-red-600">Preço Mandioca (R$/kg)</label>
-                            <input type="number" id="precoMandiocaConservador"
-                                class="w-full p-2 border rounded editable" value="0.80" step="0.01"
-                                onchange="calcularCenarios()">
+                            <input type="number" id="precoMandiocaConservador" class="w-full p-2 border rounded editable" value="0.80" step="0.01" onchange="calcularCenarios()">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-red-600">Preço Farinha (R$/kg)</label>
-                            <input type="number" id="precoFarinhaConservador" class="w-full p-2 border rounded editable"
-                                value="4.00" step="0.01" onchange="calcularCenarios()">
+                            <input type="number" id="precoFarinhaConservador" class="w-full p-2 border rounded editable" value="4.00" step="0.01" onchange="calcularCenarios()">
                         </div>
                     </div>
                     <div class="mt-4 pt-4 border-t border-red-200">
@@ -941,18 +838,15 @@
                     <div class="space-y-3">
                         <div>
                             <label class="block text-sm font-medium text-yellow-600">Produtividade (kg/ha)</label>
-                            <input type="number" id="prodRealista" class="w-full p-2 border rounded editable"
-                                value="20000" onchange="calcularCenarios()">
+                            <input type="number" id="prodRealista" class="w-full p-2 border rounded editable" value="20000" onchange="calcularCenarios()">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-yellow-600">Preço Mandioca (R$/kg)</label>
-                            <input type="number" id="precoMandiocaRealista" class="w-full p-2 border rounded editable"
-                                value="1.00" step="0.01" onchange="calcularCenarios()">
+                            <input type="number" id="precoMandiocaRealista" class="w-full p-2 border rounded editable" value="1.00" step="0.01" onchange="calcularCenarios()">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-yellow-600">Preço Farinha (R$/kg)</label>
-                            <input type="number" id="precoFarinhaRealista" class="w-full p-2 border rounded editable"
-                                value="5.00" step="0.01" onchange="calcularCenarios()">
+                            <input type="number" id="precoFarinhaRealista" class="w-full p-2 border rounded editable" value="5.00" step="0.01" onchange="calcularCenarios()">
                         </div>
                     </div>
                     <div class="mt-4 pt-4 border-t border-yellow-300">
@@ -969,18 +863,15 @@
                     <div class="space-y-3">
                         <div>
                             <label class="block text-sm font-medium text-green-600">Produtividade (kg/ha)</label>
-                            <input type="number" id="prodOtimista" class="w-full p-2 border rounded editable"
-                                value="25000" onchange="calcularCenarios()">
+                            <input type="number" id="prodOtimista" class="w-full p-2 border rounded editable" value="25000" onchange="calcularCenarios()">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-green-600">Preço Mandioca (R$/kg)</label>
-                            <input type="number" id="precoMandiocaOtimista" class="w-full p-2 border rounded editable"
-                                value="1.20" step="0.01" onchange="calcularCenarios()">
+                            <input type="number" id="precoMandiocaOtimista" class="w-full p-2 border rounded editable" value="1.20" step="0.01" onchange="calcularCenarios()">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-green-600">Preço Farinha (R$/kg)</label>
-                            <input type="number" id="precoFarinhaOtimista" class="w-full p-2 border rounded editable"
-                                value="6.00" step="0.01" onchange="calcularCenarios()">
+                            <input type="number" id="precoFarinhaOtimista" class="w-full p-2 border rounded editable" value="6.00" step="0.01" onchange="calcularCenarios()">
                         </div>
                     </div>
                     <div class="mt-4 pt-4 border-t border-green-200">
@@ -998,13 +889,11 @@
                 <div class="grid md:grid-cols-4 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-blue-600 mb-1">Meta de Faturamento (R$)</label>
-                        <input type="number" id="metaFaturamento" class="w-full p-2 border rounded editable"
-                            value="1000000" onchange="calcularExpansao()">
+                        <input type="number" id="metaFaturamento" class="w-full p-2 border rounded editable" value="1000000" onchange="calcularExpansao()">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-blue-600 mb-1">Faturamento por Hectare (R$)</label>
-                        <input type="number" id="faturamentoPorHa" class="w-full p-2 border rounded editable"
-                            value="50000" onchange="calcularExpansao()">
+                        <input type="number" id="faturamentoPorHa" class="w-full p-2 border rounded editable" value="50000" onchange="calcularExpansao()">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-blue-600 mb-1">Área Necessária (ha)</label>
@@ -1012,8 +901,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-blue-600 mb-1">Investimento Adicional</label>
-                        <input type="text" id="investimentoAdicional" class="w-full p-2 border rounded bg-gray-100"
-                            readonly>
+                        <input type="text" id="investimentoAdicional" class="w-full p-2 border rounded bg-gray-100" readonly>
                     </div>
                 </div>
             </div>
@@ -1025,15 +913,12 @@
                 </h3>
                 <div class="grid md:grid-cols-4 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-purple-600 mb-1">Faturamento Atual Mensal
-                            (R$)</label>
-                        <input type="number" id="faturamentoAtual" class="w-full p-2 border rounded editable" value="0"
-                            onchange="calcularTempo()">
+                        <label class="block text-sm font-medium text-purple-600 mb-1">Faturamento Atual Mensal (R$)</label>
+                        <input type="number" id="faturamentoAtual" class="w-full p-2 border rounded editable" value="0" onchange="calcularTempo()">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-purple-600 mb-1">Crescimento Mensal (%)</label>
-                        <input type="number" id="crescimentoMensal" class="w-full p-2 border rounded editable" value="5"
-                            step="0.1" onchange="calcularTempo()">
+                        <input type="number" id="crescimentoMensal" class="w-full p-2 border rounded editable" value="5" step="0.1" onchange="calcularTempo()">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-purple-600 mb-1">Tempo Estimado</label>
@@ -1068,7 +953,7 @@
         function togglePassword() {
             const passwordInput = document.getElementById('password');
             const toggleIcon = document.getElementById('toggleIcon');
-
+            
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
                 toggleIcon.className = 'fas fa-eye-slash';
@@ -1085,7 +970,7 @@
                 document.getElementById('currentUser').textContent = username;
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('mainSystem').classList.add('authenticated');
-
+                
                 // Carregar dados do usuário após login
                 carregarDados();
                 return true;
@@ -1117,11 +1002,11 @@
         }
 
         // Event listener para formulário de login
-        document.getElementById('loginForm').addEventListener('submit', function (e) {
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
-
+            
             if (login(username, password)) {
                 document.getElementById('loginError').classList.add('hidden');
             } else {
@@ -1133,7 +1018,7 @@
         });
 
         // ============= SISTEMA DE PERSISTÊNCIA MULTI-DISPOSITIVO =============
-
+        
         // Variáveis globais para armazenamento de dados
         let dadosInvestimentos = [];
         let dadosProducao = [];
@@ -1148,7 +1033,7 @@
         // Função para salvar dados (local e "servidor")
         function salvarDados() {
             if (!currentUser) return;
-
+            
             const dados = {
                 usuario: currentUser,
                 timestamp: new Date().toISOString(),
@@ -1173,29 +1058,29 @@
 
             // Salvar localmente
             localStorage.setItem(`fazendaMandiocaDados_${currentUser}`, JSON.stringify(dados));
-
+            
             // Simular salvamento no "servidor" (usando uma chave global)
             localStorage.setItem(`fazendaServidor_${currentUser}`, JSON.stringify(dados));
-
+            
             console.log('Dados salvos com sucesso para o usuário:', currentUser);
         }
 
         // Função para carregar dados (local e "servidor")
         function carregarDados() {
             if (!currentUser) return;
-
+            
             try {
                 // Tentar carregar do "servidor" primeiro
                 let dadosSalvos = localStorage.getItem(`fazendaServidor_${currentUser}`);
-
+                
                 // Se não encontrar no servidor, tentar localmente
                 if (!dadosSalvos) {
                     dadosSalvos = localStorage.getItem(`fazendaMandiocaDados_${currentUser}`);
                 }
-
+                
                 if (dadosSalvos) {
                     const dados = JSON.parse(dadosSalvos);
-
+                    
                     // Restaurar dados da propriedade
                     if (dados.propriedade) {
                         document.getElementById('nomePropriedade').value = dados.propriedade.nome || '';
@@ -1207,11 +1092,11 @@
                         document.getElementById('ferramentasMaquinario').value = dados.propriedade.ferramentasMaquinario || 0;
                         document.getElementById('infraestrutura').value = dados.propriedade.infraestrutura || 0;
                         document.getElementById('maoObraInicial').value = dados.propriedade.maoObraInicial || 0;
-
+                        
                         calcularArea();
                         calcularInvestimentoTotal();
                     }
-
+                    
                     // Restaurar dados das outras seções
                     dadosInvestimentos = dados.investimentos || [];
                     dadosProducao = dados.producao || [];
@@ -1219,7 +1104,7 @@
                     dadosFuncionarios = dados.funcionarios || [];
                     dadosHoras = dados.horas || [];
                     dadosVendas = dados.vendas || [];
-
+                    
                     // Atualizar todas as tabelas e gráficos
                     atualizarTabelaInvestimentos();
                     atualizarTabelaProducao();
@@ -1230,7 +1115,7 @@
                     atualizarDashboard();
                     atualizarProgressoMeta();
                     calcularCenarios();
-
+                    
                     console.log('Dados carregados com sucesso para o usuário:', currentUser);
                 }
             } catch (error) {
@@ -1239,9 +1124,9 @@
         }
 
         // ============= CÓDIGO ORIGINAL DO SISTEMA =============
-
+        
         // Navegação por abas
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             // Verificar autenticação primeiro
             if (!checkAuth()) {
                 document.getElementById('loginScreen').style.display = 'flex';
@@ -1255,17 +1140,17 @@
             tabButtons.forEach(button => {
                 button.addEventListener('click', () => {
                     const targetTab = button.getAttribute('data-tab');
-
+                    
                     // Remover classe active de todos os botões e conteúdos
                     tabButtons.forEach(btn => btn.classList.remove('active', 'text-green-600', 'border-green-600'));
                     tabContents.forEach(content => content.classList.remove('active'));
-
+                    
                     // Adicionar classe active ao botão clicado
                     button.classList.add('active', 'text-green-600', 'border-green-600');
-
+                    
                     // Mostrar o conteúdo correspondente
                     document.getElementById(targetTab).classList.add('active');
-
+                    
                     // Atualizar gráficos se necessário
                     setTimeout(() => {
                         if (targetTab === 'investimentos') {
@@ -1296,7 +1181,7 @@
         window.addEventListener('beforeunload', salvarDados);
 
         // ============= FUNÇÕES DA PROPRIEDADE =============
-
+        
         function calcularArea() {
             const areaHa = parseFloat(document.getElementById('areaHa').value) || 0;
             const areaM2 = areaHa * 10000;
@@ -1311,14 +1196,14 @@
             const ferramentasMaquinario = parseFloat(document.getElementById('ferramentasMaquinario').value) || 0;
             const infraestrutura = parseFloat(document.getElementById('infraestrutura').value) || 0;
             const maoObraInicial = parseFloat(document.getElementById('maoObraInicial').value) || 0;
-
+            
             const total = valorTerra + limpezaTerreno + insumosAgricolas + ferramentasMaquinario + infraestrutura + maoObraInicial;
             document.getElementById('totalInvestimento').textContent = formatarMoeda(total);
             salvarDados();
         }
 
         // ============= FUNÇÕES DE INVESTIMENTOS =============
-
+        
         function adicionarInvestimento() {
             const data = document.getElementById('dataInvestimento').value;
             const descricao = document.getElementById('descricaoInvestimento').value;
@@ -1345,13 +1230,13 @@
             dadosInvestimentos.push(investimento);
             atualizarTabelaInvestimentos();
             atualizarGraficosInvestimentos();
-
+            
             // Limpar formulário
             document.getElementById('dataInvestimento').value = '';
             document.getElementById('descricaoInvestimento').value = '';
             document.getElementById('valorInvestimento').value = '';
             document.getElementById('safraInvestimento').value = '';
-
+            
             salvarDados();
         }
 
@@ -1443,7 +1328,7 @@
         }
 
         // ============= FUNÇÕES DE PRODUÇÃO =============
-
+        
         function calcularProducao() {
             const mandiocaColhida = parseFloat(document.getElementById('mandiocaColhida').value) || 0;
             const farinhaProduzida = parseFloat(document.getElementById('farinhaProduzida').value) || 0;
@@ -1490,7 +1375,7 @@
             dadosProducao.push(producao);
             atualizarTabelaProducao();
             atualizarGraficoProducao();
-
+            
             // Limpar formulário
             document.getElementById('dataPlantio').value = '';
             document.getElementById('dataColheita').value = '';
@@ -1501,7 +1386,7 @@
             document.getElementById('eficienciaConversao').value = '';
             document.getElementById('custoPorKg').value = '';
             document.getElementById('custoPorHa').value = '';
-
+            
             salvarDados();
         }
 
@@ -1563,7 +1448,7 @@
         }
 
         // ============= FUNÇÕES DE ESTOQUE =============
-
+        
         function adicionarInsumo() {
             const nome = document.getElementById('nomeInsumo').value;
             const quantidade = parseFloat(document.getElementById('quantidadeInsumo').value);
@@ -1586,13 +1471,13 @@
             dadosEstoque.insumos.push(insumo);
             atualizarListaInsumos();
             atualizarAlertas();
-
+            
             // Limpar formulário
             document.getElementById('nomeInsumo').value = '';
             document.getElementById('quantidadeInsumo').value = '';
             document.getElementById('validadeInsumo').value = '';
             document.getElementById('minimoInsumo').value = '';
-
+            
             salvarDados();
         }
 
@@ -1653,14 +1538,14 @@
 
             dadosEstoque.farinha.push(farinha);
             atualizarListaFarinha();
-
+            
             // Limpar formulário
             document.getElementById('loteId').value = '';
             document.getElementById('quantidadeFarinha').value = '';
             document.getElementById('dataProducaoFarinha').value = '';
             document.getElementById('validadeFarinha').value = '';
             document.getElementById('custoArmazenamento').value = '';
-
+            
             salvarDados();
         }
 
@@ -1761,7 +1646,7 @@
         }
 
         // ============= FUNÇÕES DE PESSOAS =============
-
+        
         function adicionarFuncionario() {
             const nome = document.getElementById('nomeFuncionario').value;
             const tipo = document.getElementById('tipoFuncionario').value;
@@ -1786,12 +1671,12 @@
             atualizarTabelaFuncionarios();
             atualizarSelectFuncionarios();
             atualizarResumoRH();
-
+            
             // Limpar formulário
             document.getElementById('nomeFuncionario').value = '';
             document.getElementById('salarioFuncionario').value = '';
             document.getElementById('funcaoFuncionario').value = '';
-
+            
             salvarDados();
         }
 
@@ -1857,21 +1742,21 @@
             };
 
             dadosHoras.push(registro);
-
+            
             // Atualizar horas do funcionário
             const funcionario = dadosFuncionarios.find(f => f.id === funcionarioId);
             if (funcionario) {
                 funcionario.horasMes += horas;
             }
-
+            
             atualizarTabelaFuncionarios();
             atualizarResumoRH();
-
+            
             // Limpar formulário
             document.getElementById('funcionarioHoras').value = '';
             document.getElementById('dataHoras').value = '';
             document.getElementById('horasTrabalhadas').value = '';
-
+            
             salvarDados();
         }
 
@@ -1886,7 +1771,7 @@
         }
 
         // ============= FUNÇÕES DE VENDAS =============
-
+        
         function calcularVenda() {
             const produto = document.getElementById('produtoVenda').value;
             const quantidade = parseFloat(document.getElementById('quantidadeVenda').value) || 0;
@@ -1932,7 +1817,7 @@
             atualizarResumoVendas();
             atualizarGraficosVendas();
             atualizarProgressoMeta();
-
+            
             // Limpar formulário
             document.getElementById('dataVenda').value = '';
             document.getElementById('clienteVenda').value = '';
@@ -1940,7 +1825,7 @@
             document.getElementById('precoUnitario').value = '';
             document.getElementById('valorTotalVenda').value = '';
             document.getElementById('taxaProcessamento').value = '';
-
+            
             salvarDados();
         }
 
@@ -1991,7 +1876,7 @@
                 clientesMap[venda.cliente] = (clientesMap[venda.cliente] || 0) + venda.valorLiquido;
             });
 
-            const melhorCliente = Object.keys(clientesMap).reduce((a, b) =>
+            const melhorCliente = Object.keys(clientesMap).reduce((a, b) => 
                 clientesMap[a] > clientesMap[b] ? a : b, '-'
             );
 
@@ -2056,7 +1941,7 @@
         }
 
         // ============= FUNÇÕES DO DASHBOARD =============
-
+        
         function atualizarDashboard() {
             const faturamento = dadosVendas.reduce((total, venda) => total + venda.valorLiquido, 0);
             const custos = dadosInvestimentos.reduce((total, inv) => total + inv.valor, 0);
@@ -2157,7 +2042,7 @@
         }
 
         // ============= FUNÇÕES DE PROJEÇÕES =============
-
+        
         function calcularCenarios() {
             const areaTotal = parseFloat(document.getElementById('areaHa')?.value) || 10; // Padrão 10ha
 
@@ -2165,7 +2050,7 @@
             const prodConservador = parseFloat(document.getElementById('prodConservador').value);
             const precoMandiocaConservador = parseFloat(document.getElementById('precoMandiocaConservador').value);
             const precoFarinhaConservador = parseFloat(document.getElementById('precoFarinhaConservador').value);
-
+            
             const receitaConservador = areaTotal * (
                 (prodConservador * 0.7 * precoMandiocaConservador) + // 70% mandioca
                 (prodConservador * 0.3 * 0.25 * precoFarinhaConservador) // 30% vira farinha (conversão 25%)
@@ -2175,7 +2060,7 @@
             const prodRealista = parseFloat(document.getElementById('prodRealista').value);
             const precoMandiocaRealista = parseFloat(document.getElementById('precoMandiocaRealista').value);
             const precoFarinhaRealista = parseFloat(document.getElementById('precoFarinhaRealista').value);
-
+            
             const receitaRealista = areaTotal * (
                 (prodRealista * 0.6 * precoMandiocaRealista) +
                 (prodRealista * 0.4 * 0.25 * precoFarinhaRealista)
@@ -2185,7 +2070,7 @@
             const prodOtimista = parseFloat(document.getElementById('prodOtimista').value);
             const precoMandiocaOtimista = parseFloat(document.getElementById('precoMandiocaOtimista').value);
             const precoFarinhaOtimista = parseFloat(document.getElementById('precoFarinhaOtimista').value);
-
+            
             const receitaOtimista = areaTotal * (
                 (prodOtimista * 0.5 * precoMandiocaOtimista) +
                 (prodOtimista * 0.5 * 0.25 * precoFarinhaOtimista)
@@ -2201,7 +2086,7 @@
         function calcularExpansao() {
             const metaFaturamento = parseFloat(document.getElementById('metaFaturamento').value);
             const faturamentoPorHa = parseFloat(document.getElementById('faturamentoPorHa').value);
-
+            
             const areaNecessaria = metaFaturamento / faturamentoPorHa;
             const investimentoAdicional = areaNecessaria * 25000; // R$ 25.000 por hectare
 
@@ -2255,7 +2140,7 @@
         }
 
         // ============= FUNÇÕES UTILITÁRIAS =============
-
+        
         function formatarMoeda(valor) {
             return new Intl.NumberFormat('pt-BR', {
                 style: 'currency',
@@ -2276,5 +2161,4 @@
         }, 1000);
     </script>
 </body>
-
 </html>
