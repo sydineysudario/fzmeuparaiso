@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,95 +8,205 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, doc, setDoc, getDoc, collection, addDoc, getDocs, deleteDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC6MybSwXWQgzHmkkKIJ37h-8QEQh3kSK4",
+            authDomain: "fzmeuparaiso.firebaseapp.com",
+            projectId: "fzmeuparaiso",
+            storageBucket: "fzmeuparaiso.firebasestorage.app",
+            messagingSenderId: "425623716607",
+            appId: "1:425623716607:web:8f318f0dc77df4fccb82ca",
+            measurementId: "G-EGCP5KB3KW"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        window.auth = getAuth(app);
+        window.db = getFirestore(app);
+        window.firebaseAuth = { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged };
+        window.firestore = { doc, setDoc, getDoc, collection, addDoc, getDocs, deleteDoc, updateDoc };
+    </script>
+
     <style>
         @media print {
-            body { font-size: 12px; }
-            .no-print { display: none; }
+            body {
+                font-size: 12px;
+            }
+
+            .no-print {
+                display: none;
+            }
         }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .chart-container { height: 300px; }
-        input[readonly] { background-color: #f9f9f9; }
-        .editable { background-color: #fef3c7 !important; }
-        .positive { color: #059669; }
-        .negative { color: #dc2626; }
-        
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .chart-container {
+            height: 300px;
+        }
+
+        input[readonly] {
+            background-color: #f9f9f9;
+        }
+
+        .editable {
+            background-color: #fef3c7 !important;
+        }
+
+        .positive {
+            color: #059669;
+        }
+
+        .negative {
+            color: #dc2626;
+        }
+
         .login-container {
             min-height: 100vh;
             background: linear-gradient(135deg, #4ade80 0%, #22c55e 50%, #16a34a 100%);
         }
+
         .login-box {
             backdrop-filter: blur(10px);
             background: rgba(255, 255, 255, 0.95);
         }
+
         .main-system {
             display: none;
         }
+
         .main-system.authenticated {
             display: block;
         }
+
         .logo-container {
             max-width: 120px;
             max-height: 80px;
         }
+
         .logo-container img {
             width: 100%;
             height: 100%;
             object-fit: contain;
         }
+
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0.5rem;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tab-btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.875rem;
+            }
+
+            .overflow-x-auto {
+                font-size: 0.875rem;
+            }
+
+            .chart-container {
+                height: 250px;
+            }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
     </style>
 </head>
+
 <body class="bg-gray-50 font-sans">
     <!-- Tela de Login -->
     <div id="loginScreen" class="login-container flex items-center justify-center p-4">
         <div class="login-box max-w-md w-full p-8 rounded-2xl shadow-2xl border border-white/20">
             <div class="text-center mb-8">
                 <div class="logo-container mx-auto mb-4">
-                    <img src="https://i.postimg.cc/Y0cB4Km2/Chat-GPT-Image-11-08-2025-13-05-16.png" alt="Logo Fazenda" class="mx-auto">
+                    <img src="https://i.postimg.cc/Y0cB4Km2/Chat-GPT-Image-11-08-2025-13-05-16.png" alt="Logo Fazenda"
+                        class="mx-auto">
                 </div>
-                <h1 class="text-3xl font-bold text-gray-800 mb-2">
+                <h1 style="margin-top: 55px;" class="text-3xl font-bold text-gray-800 mb-2">
                     <i class="fas fa-seedling text-green-600 mr-2"></i>
                     Fazenda Meu Paraíso
                 </h1>
                 <p class="text-gray-600">Sistema de Gestão Integrado</p>
             </div>
-            
-            <form id="loginForm" class="space-y-6">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Usuário</label>
-                    <div class="relative">
-                        <input type="text" id="username" required 
-                               class="w-full p-4 pl-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition duration-200"
-                               placeholder="Digite seu usuário">
-                        <i class="fas fa-user absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+
+            <!-- Login Form -->
+            <div id="loginForm">
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                        <div class="relative">
+                            <input type="email" id="email" required
+                                class="w-full p-4 pl-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition duration-200"
+                                placeholder="Digite seu email">
+                            <i
+                                class="fas fa-envelope absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        </div>
                     </div>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Senha</label>
-                    <div class="relative">
-                        <input type="password" id="password" required 
-                               class="w-full p-4 pl-12 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition duration-200"
-                               placeholder="Digite sua senha">
-                        <i class="fas fa-lock absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                        <button type="button" onclick="togglePassword()" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                            <i class="fas fa-eye" id="toggleIcon"></i>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Senha</label>
+                        <div class="relative">
+                            <input type="password" id="password" required
+                                class="w-full p-4 pl-12 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition duration-200"
+                                placeholder="Digite sua senha">
+                            <i class="fas fa-lock absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            <button type="button" onclick="togglePassword()"
+                                class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                <i class="fas fa-eye" id="toggleIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex space-x-4">
+                        <button onclick="loginUser()" id="loginBtn"
+                            class="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white p-4 rounded-lg font-medium hover:from-green-600 hover:to-green-700 transform hover:scale-105 transition duration-200 shadow-lg">
+                            <i class="fas fa-sign-in-alt mr-2"></i>
+                            Entrar
+                        </button>
+                        <button onclick="registerUser()" id="registerBtn"
+                            class="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-lg font-medium hover:from-blue-600 hover:to-blue-700 transform hover:scale-105 transition duration-200 shadow-lg">
+                            <i class="fas fa-user-plus mr-2"></i>
+                            Cadastrar
                         </button>
                     </div>
                 </div>
-                
-                <button type="submit" 
-                        class="w-full bg-gradient-to-r from-green-500 to-green-600 text-white p-4 rounded-lg font-medium hover:from-green-600 hover:to-green-700 transform hover:scale-105 transition duration-200 shadow-lg">
-                    <i class="fas fa-sign-in-alt mr-2"></i>
-                    Entrar no Sistema
-                </button>
-            </form>
-            
-            <div id="loginError" class="hidden mt-4 p-4 bg-red-100 border border-red-300 text-red-700 rounded-lg text-center">
-                <i class="fas fa-exclamation-triangle mr-2"></i>
-                Usuário ou senha incorretos!
             </div>
-            
+
+            <div id="authMessage" class="hidden mt-4 p-4 rounded-lg text-center"></div>
+
             <div class="mt-8 text-center text-sm text-gray-500">
                 <p>Sistema de Gestão - Fazenda de Mandioca</p>
                 <p>Controle Completo para Atingir a Meta de R$ 1.000.000</p>
@@ -104,32 +215,36 @@
     </div>
 
     <!-- Sistema Principal -->
-    <div id="mainSystem" class="main-system container mx-auto p-4 max-w-7xl">
+    <div id="mainSystem" class="main-system container mx-auto p-2 md:p-4 max-w-7xl">
         <!-- Header -->
-        <div class="bg-green-800 text-white p-6 rounded-lg mb-6">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                    <div class="logo-container mr-4">
-                        <img src="https://i.postimg.cc/Y0cB4Km2/Chat-GPT-Image-11-08-2025-13-05-16.png" alt="Logo Fazenda" class="rounded-lg">
+        <div class="bg-green-800 text-white p-4 md:p-6 rounded-lg mb-4 md:mb-6">
+            <div class="flex flex-col md:flex-row items-center justify-between">
+                <div class="flex flex-col md:flex-row items-center mb-4 md:mb-0">
+                    <div class="logo-container mb-2 md:mb-0 md:mr-4">
+                        <img src="https://i.postimg.cc/Y0cB4Km2/Chat-GPT-Image-11-08-2025-13-05-16.png"
+                            alt="Logo Fazenda" class="rounded-lg">
                     </div>
-                    <div>
-                        <h1 class="text-3xl font-bold flex items-center">
-                            <i class="fas fa-seedling mr-3"></i>
+                    <div class="text-center md:text-left">
+                        <h1 class="text-xl md:text-3xl font-bold flex items-center justify-center md:justify-start">
+                            <i class="fas fa-seedling mr-2 md:mr-3"></i>
                             Sistema de Gestão - Fazenda Meu Paraíso
                         </h1>
-                        <p class="text-green-200 mt-2">Controle Completo para Atingir a Meta de R$ 1.000.000</p>
+                        <p class="text-green-200 mt-1 md:mt-2 text-sm md:text-base">Controle Completo para Atingir a
+                            Meta de R$ 1.000.000</p>
                     </div>
                 </div>
-                <div class="text-right">
-                    <div class="flex items-center mb-2">
-                        <span class="text-sm mr-3">Usuário: <strong id="currentUser"></strong></span>
-                        <button onclick="logout()" class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm transition duration-200">
+                <div class="text-center md:text-right">
+                    <div class="flex flex-col md:flex-row items-center mb-2">
+                        <span class="text-sm mr-0 md:mr-3 mb-2 md:mb-0">Usuário: <strong
+                                id="currentUser"></strong></span>
+                        <button onclick="logoutUser()"
+                            class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm transition duration-200">
                             <i class="fas fa-sign-out-alt mr-1"></i>Sair
                         </button>
                     </div>
-                    <div class="text-2xl font-bold" id="metaProgress">R$ 0</div>
+                    <div class="text-xl md:text-2xl font-bold" id="metaProgress">R$ 0</div>
                     <div class="text-sm text-green-200">Meta: R$ 1.000.000</div>
-                    <div class="w-40 bg-green-900 rounded-full h-3 mt-2">
+                    <div class="w-32 md:w-40 bg-green-900 rounded-full h-3 mt-2 mx-auto md:mx-0">
                         <div class="bg-yellow-400 h-3 rounded-full" id="progressBar" style="width: 0%"></div>
                     </div>
                 </div>
@@ -137,103 +252,133 @@
         </div>
 
         <!-- Navigation Tabs -->
-        <div class="bg-white rounded-lg shadow-sm mb-6">
+        <div class="bg-white rounded-lg shadow-sm mb-4 md:mb-6">
             <div class="flex flex-wrap border-b overflow-x-auto">
-                <button class="tab-btn px-6 py-3 font-medium text-gray-600 border-b-2 border-transparent hover:text-green-600 hover:border-green-600 active" data-tab="propriedade">
-                    <i class="fas fa-home mr-2"></i>Dados da Propriedade
+                <button
+                    class="tab-btn px-3 md:px-6 py-2 md:py-3 font-medium text-gray-600 border-b-2 border-transparent hover:text-green-600 hover:border-green-600 active text-sm md:text-base"
+                    data-tab="propriedade">
+                    <i class="fas fa-home mr-1 md:mr-2"></i><span class="hidden sm:inline">Dados da </span>Propriedade
                 </button>
-                <button class="tab-btn px-6 py-3 font-medium text-gray-600 border-b-2 border-transparent hover:text-green-600 hover:border-green-600" data-tab="investimentos">
-                    <i class="fas fa-money-bill-wave mr-2"></i>Investimentos
+                <button
+                    class="tab-btn px-3 md:px-6 py-2 md:py-3 font-medium text-gray-600 border-b-2 border-transparent hover:text-green-600 hover:border-green-600 text-sm md:text-base"
+                    data-tab="investimentos">
+                    <i class="fas fa-money-bill-wave mr-1 md:mr-2"></i>Investimentos
                 </button>
-                <button class="tab-btn px-6 py-3 font-medium text-gray-600 border-b-2 border-transparent hover:text-green-600 hover:border-green-600" data-tab="producao">
-                    <i class="fas fa-seedling mr-2"></i>Produção
+                <button
+                    class="tab-btn px-3 md:px-6 py-2 md:py-3 font-medium text-gray-600 border-b-2 border-transparent hover:text-green-600 hover:border-green-600 text-sm md:text-base"
+                    data-tab="producao">
+                    <i class="fas fa-seedling mr-1 md:mr-2"></i>Produção
                 </button>
-                <button class="tab-btn px-6 py-3 font-medium text-gray-600 border-b-2 border-transparent hover:text-green-600 hover:border-green-600" data-tab="estoque">
-                    <i class="fas fa-boxes mr-2"></i>Estoque
+                <button
+                    class="tab-btn px-3 md:px-6 py-2 md:py-3 font-medium text-gray-600 border-b-2 border-transparent hover:text-green-600 hover:border-green-600 text-sm md:text-base"
+                    data-tab="estoque">
+                    <i class="fas fa-boxes mr-1 md:mr-2"></i>Estoque
                 </button>
-                <button class="tab-btn px-6 py-3 font-medium text-gray-600 border-b-2 border-transparent hover:text-green-600 hover:border-green-600" data-tab="pessoas">
-                    <i class="fas fa-users mr-2"></i>Pessoas
+                <button
+                    class="tab-btn px-3 md:px-6 py-2 md:py-3 font-medium text-gray-600 border-b-2 border-transparent hover:text-green-600 hover:border-green-600 text-sm md:text-base"
+                    data-tab="pessoas">
+                    <i class="fas fa-users mr-1 md:mr-2"></i>Pessoas
                 </button>
-                <button class="tab-btn px-6 py-3 font-medium text-gray-600 border-b-2 border-transparent hover:text-green-600 hover:border-green-600" data-tab="vendas">
-                    <i class="fas fa-shopping-cart mr-2"></i>Vendas
+                <button
+                    class="tab-btn px-3 md:px-6 py-2 md:py-3 font-medium text-gray-600 border-b-2 border-transparent hover:text-green-600 hover:border-green-600 text-sm md:text-base"
+                    data-tab="vendas">
+                    <i class="fas fa-shopping-cart mr-1 md:mr-2"></i>Vendas
                 </button>
-                <button class="tab-btn px-6 py-3 font-medium text-gray-600 border-b-2 border-transparent hover:text-green-600 hover:border-green-600" data-tab="dashboard">
-                    <i class="fas fa-chart-line mr-2"></i>Dashboard
+                <button
+                    class="tab-btn px-3 md:px-6 py-2 md:py-3 font-medium text-gray-600 border-b-2 border-transparent hover:text-green-600 hover:border-green-600 text-sm md:text-base"
+                    data-tab="dashboard">
+                    <i class="fas fa-chart-line mr-1 md:mr-2"></i>Dashboard
                 </button>
-                <button class="tab-btn px-6 py-3 font-medium text-gray-600 border-b-2 border-transparent hover:text-green-600 hover:border-green-600" data-tab="projecoes">
-                    <i class="fas fa-crystal-ball mr-2"></i>Projeções
+                <button
+                    class="tab-btn px-3 md:px-6 py-2 md:py-3 font-medium text-gray-600 border-b-2 border-transparent hover:text-green-600 hover:border-green-600 text-sm md:text-base"
+                    data-tab="projecoes">
+                    <i class="fas fa-crystal-ball mr-1 md:mr-2"></i>Projeções
                 </button>
             </div>
         </div>
 
         <!-- Tab Contents -->
-        
+
         <!-- 1. Dados da Propriedade -->
-        <div id="propriedade" class="tab-content active bg-white rounded-lg shadow-sm p-6">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-                <i class="fas fa-home text-green-600 mr-3"></i>Dados da Propriedade
+        <div id="propriedade" class="tab-content active bg-white rounded-lg shadow-sm p-4 md:p-6">
+            <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-6 flex items-center">
+                <i class="fas fa-home text-green-600 mr-2 md:mr-3"></i>Dados da Propriedade
             </h2>
-            
-            <div class="grid md:grid-cols-2 gap-8">
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                 <!-- Informações Gerais -->
                 <div>
-                    <h3 class="text-lg font-semibold text-gray-700 mb-4 bg-green-100 p-3 rounded">
+                    <h3 class="text-base md:text-lg font-semibold text-gray-700 mb-4 bg-green-100 p-3 rounded">
                         <i class="fas fa-info-circle mr-2"></i>Informações Gerais
                     </h3>
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">Nome da Propriedade</label>
-                            <input type="text" id="nomePropriedade" class="w-full p-3 border rounded-lg editable" placeholder="Ex: Fazenda São João">
+                            <input type="text" id="nomePropriedade" class="w-full p-3 border rounded-lg editable"
+                                placeholder="Ex: Fazenda São João">
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-600 mb-1">Área (hectares)</label>
-                                <input type="number" id="areaHa" class="w-full p-3 border rounded-lg editable" placeholder="0" onchange="calcularArea()">
+                                <input type="number" id="areaHa" class="w-full p-3 border rounded-lg editable"
+                                    placeholder="0" onchange="calcularArea()">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-600 mb-1">Área (m²)</label>
-                                <input type="number" id="areaM2" class="w-full p-3 border rounded-lg bg-gray-100" readonly>
+                                <input type="number" id="areaM2" class="w-full p-3 border rounded-lg bg-gray-100"
+                                    readonly>
                             </div>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">Localização</label>
-                            <input type="text" id="localizacao" class="w-full p-3 border rounded-lg editable" placeholder="Cidade, Estado">
+                            <input type="text" id="localizacao" class="w-full p-3 border rounded-lg editable"
+                                placeholder="Cidade, Estado">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-600 mb-1">Valor Estimado da Terra (R$)</label>
-                            <input type="number" id="valorTerra" class="w-full p-3 border rounded-lg editable" placeholder="0,00" onchange="calcularInvestimentoTotal()">
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Valor Estimado da Terra
+                                (R$)</label>
+                            <input type="number" id="valorTerra" class="w-full p-3 border rounded-lg editable"
+                                placeholder="0,00" onchange="calcularInvestimentoTotal()">
                         </div>
                     </div>
                 </div>
 
                 <!-- Custos Iniciais -->
                 <div>
-                    <h3 class="text-lg font-semibold text-gray-700 mb-4 bg-yellow-100 p-3 rounded">
+                    <h3 class="text-base md:text-lg font-semibold text-gray-700 mb-4 bg-yellow-100 p-3 rounded">
                         <i class="fas fa-calculator mr-2"></i>Custos Iniciais Detalhados
                     </h3>
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">Limpeza do Terreno (R$)</label>
-                            <input type="number" id="limpezaTerreno" class="w-full p-3 border rounded-lg editable" placeholder="0,00" onchange="calcularInvestimentoTotal()">
+                            <input type="number" id="limpezaTerreno" class="w-full p-3 border rounded-lg editable"
+                                placeholder="0,00" onchange="calcularInvestimentoTotal()">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">Insumos Agrícolas (R$)</label>
-                            <input type="number" id="insumosAgricolas" class="w-full p-3 border rounded-lg editable" placeholder="0,00" onchange="calcularInvestimentoTotal()">
+                            <input type="number" id="insumosAgricolas" class="w-full p-3 border rounded-lg editable"
+                                placeholder="0,00" onchange="calcularInvestimentoTotal()">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-600 mb-1">Ferramentas e Maquinário (R$)</label>
-                            <input type="number" id="ferramentasMaquinario" class="w-full p-3 border rounded-lg editable" placeholder="0,00" onchange="calcularInvestimentoTotal()">
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Ferramentas e Maquinário
+                                (R$)</label>
+                            <input type="number" id="ferramentasMaquinario"
+                                class="w-full p-3 border rounded-lg editable" placeholder="0,00"
+                                onchange="calcularInvestimentoTotal()">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">Infraestrutura (R$)</label>
-                            <input type="number" id="infraestrutura" class="w-full p-3 border rounded-lg editable" placeholder="0,00" onchange="calcularInvestimentoTotal()">
+                            <input type="number" id="infraestrutura" class="w-full p-3 border rounded-lg editable"
+                                placeholder="0,00" onchange="calcularInvestimentoTotal()">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">Mão de Obra Inicial (R$)</label>
-                            <input type="number" id="maoObraInicial" class="w-full p-3 border rounded-lg editable" placeholder="0,00" onchange="calcularInvestimentoTotal()">
+                            <input type="number" id="maoObraInicial" class="w-full p-3 border rounded-lg editable"
+                                placeholder="0,00" onchange="calcularInvestimentoTotal()">
                         </div>
                         <div class="bg-green-50 p-4 rounded-lg border border-green-200">
-                            <label class="block text-lg font-bold text-green-800 mb-1">Total de Investimento Inicial</label>
+                            <label class="block text-lg font-bold text-green-800 mb-1">Total de Investimento
+                                Inicial</label>
                             <div class="text-2xl font-bold text-green-600" id="totalInvestimento">R$ 0,00</div>
                         </div>
                     </div>
@@ -242,22 +387,23 @@
         </div>
 
         <!-- 2. Investimentos -->
-        <div id="investimentos" class="tab-content bg-white rounded-lg shadow-sm p-6">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-                <i class="fas fa-money-bill-wave text-green-600 mr-3"></i>Investimentos - Fluxo de Caixa
+        <div id="investimentos" class="tab-content bg-white rounded-lg shadow-sm p-4 md:p-6">
+            <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-6 flex items-center">
+                <i class="fas fa-money-bill-wave text-green-600 mr-2 md:mr-3"></i>Investimentos - Fluxo de Caixa
             </h2>
-            
+
             <!-- Formulário de Adicionar Investimento -->
-            <div class="bg-blue-50 p-6 rounded-lg mb-6">
-                <h3 class="text-lg font-semibold text-blue-800 mb-4">Adicionar Novo Investimento</h3>
-                <div class="grid md:grid-cols-4 gap-4">
+            <div class="bg-blue-50 p-4 md:p-6 rounded-lg mb-4 md:mb-6">
+                <h3 class="text-base md:text-lg font-semibold text-blue-800 mb-4">Adicionar Novo Investimento</h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Data</label>
                         <input type="date" id="dataInvestimento" class="w-full p-2 border rounded-lg editable">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Descrição</label>
-                        <input type="text" id="descricaoInvestimento" class="w-full p-2 border rounded-lg editable" placeholder="Descrição do gasto">
+                        <input type="text" id="descricaoInvestimento" class="w-full p-2 border rounded-lg editable"
+                            placeholder="Descrição do gasto">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Categoria</label>
@@ -273,10 +419,11 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Valor (R$)</label>
-                        <input type="number" id="valorInvestimento" class="w-full p-2 border rounded-lg editable" placeholder="0,00">
+                        <input type="number" id="valorInvestimento" class="w-full p-2 border rounded-lg editable"
+                            placeholder="0,00">
                     </div>
                 </div>
-                <div class="grid md:grid-cols-3 gap-4 mt-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Tipo</label>
                         <select id="tipoInvestimento" class="w-full p-2 border rounded-lg editable">
@@ -286,10 +433,12 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Safra</label>
-                        <input type="text" id="safraInvestimento" class="w-full p-2 border rounded-lg editable" placeholder="Ex: 2024/1">
+                        <input type="text" id="safraInvestimento" class="w-full p-2 border rounded-lg editable"
+                            placeholder="Ex: 2024/1">
                     </div>
                     <div class="flex items-end">
-                        <button onclick="adicionarInvestimento()" class="w-full bg-green-600 text-white p-2 rounded-lg hover:bg-green-700 transition">
+                        <button onclick="adicionarInvestimento()"
+                            class="w-full bg-green-600 text-white p-2 rounded-lg hover:bg-green-700 transition">
                             <i class="fas fa-plus mr-2"></i>Adicionar
                         </button>
                     </div>
@@ -297,17 +446,17 @@
             </div>
 
             <!-- Lista de Investimentos -->
-            <div class="overflow-x-auto">
-                <table class="w-full border-collapse border border-gray-300">
+            <div class="overflow-x-auto mb-6">
+                <table class="w-full border-collapse border border-gray-300 text-sm">
                     <thead class="bg-gray-100">
                         <tr>
-                            <th class="border border-gray-300 p-3 text-left">Data</th>
-                            <th class="border border-gray-300 p-3 text-left">Descrição</th>
-                            <th class="border border-gray-300 p-3 text-left">Categoria</th>
-                            <th class="border border-gray-300 p-3 text-left">Valor</th>
-                            <th class="border border-gray-300 p-3 text-left">Tipo</th>
-                            <th class="border border-gray-300 p-3 text-left">Safra</th>
-                            <th class="border border-gray-300 p-3 text-left">Ações</th>
+                            <th class="border border-gray-300 p-2 md:p-3 text-left">Data</th>
+                            <th class="border border-gray-300 p-2 md:p-3 text-left">Descrição</th>
+                            <th class="border border-gray-300 p-2 md:p-3 text-left">Categoria</th>
+                            <th class="border border-gray-300 p-2 md:p-3 text-left">Valor</th>
+                            <th class="border border-gray-300 p-2 md:p-3 text-left">Tipo</th>
+                            <th class="border border-gray-300 p-2 md:p-3 text-left">Safra</th>
+                            <th class="border border-gray-300 p-2 md:p-3 text-left">Ações</th>
                         </tr>
                     </thead>
                     <tbody id="tabelaInvestimentos"></tbody>
@@ -315,15 +464,15 @@
             </div>
 
             <!-- Gráfico de Investimentos -->
-            <div class="mt-8 grid md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
                 <div>
-                    <h3 class="text-lg font-semibold text-gray-700 mb-4">Gastos por Categoria</h3>
+                    <h3 class="text-base md:text-lg font-semibold text-gray-700 mb-4">Gastos por Categoria</h3>
                     <div class="chart-container">
                         <canvas id="graficoInvestimentosCategoria"></canvas>
                     </div>
                 </div>
                 <div>
-                    <h3 class="text-lg font-semibold text-gray-700 mb-4">Evolução Mensal</h3>
+                    <h3 class="text-base md:text-lg font-semibold text-gray-700 mb-4">Evolução Mensal</h3>
                     <div class="chart-container">
                         <canvas id="graficoInvestimentosMensal"></canvas>
                     </div>
@@ -332,15 +481,15 @@
         </div>
 
         <!-- 3. Produção -->
-        <div id="producao" class="tab-content bg-white rounded-lg shadow-sm p-6">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-                <i class="fas fa-seedling text-green-600 mr-3"></i>Controle de Produção - Safras
+        <div id="producao" class="tab-content bg-white rounded-lg shadow-sm p-4 md:p-6">
+            <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-6 flex items-center">
+                <i class="fas fa-seedling text-green-600 mr-2 md:mr-3"></i>Controle de Produção - Safras
             </h2>
 
             <!-- Formulário de Nova Safra -->
-            <div class="bg-green-50 p-6 rounded-lg mb-6">
-                <h3 class="text-lg font-semibold text-green-800 mb-4">Nova Safra</h3>
-                <div class="grid md:grid-cols-3 gap-4">
+            <div class="bg-green-50 p-4 md:p-6 rounded-lg mb-4 md:mb-6">
+                <h3 class="text-base md:text-lg font-semibold text-green-800 mb-4">Nova Safra</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Data de Plantio</label>
                         <input type="date" id="dataPlantio" class="w-full p-2 border rounded-lg editable">
@@ -351,32 +500,38 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Área Plantada (ha)</label>
-                        <input type="number" id="areaPlantada" class="w-full p-2 border rounded-lg editable" placeholder="0">
+                        <input type="number" id="areaPlantada" class="w-full p-2 border rounded-lg editable"
+                            placeholder="0">
                     </div>
                 </div>
-                <div class="grid md:grid-cols-4 gap-4 mt-4">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Mandioca Colhida (kg)</label>
-                        <input type="number" id="mandiocaColhida" class="w-full p-2 border rounded-lg editable" placeholder="0" onchange="calcularProducao()">
+                        <input type="number" id="mandiocaColhida" class="w-full p-2 border rounded-lg editable"
+                            placeholder="0" onchange="calcularProducao()">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Farinha Produzida (kg)</label>
-                        <input type="number" id="farinhaProduzida" class="w-full p-2 border rounded-lg editable" placeholder="0" onchange="calcularProducao()">
+                        <input type="number" id="farinhaProduzida" class="w-full p-2 border rounded-lg editable"
+                            placeholder="0" onchange="calcularProducao()">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Custo Total da Safra (R$)</label>
-                        <input type="number" id="custoSafra" class="w-full p-2 border rounded-lg editable" placeholder="0,00" onchange="calcularProducao()">
+                        <input type="number" id="custoSafra" class="w-full p-2 border rounded-lg editable"
+                            placeholder="0,00" onchange="calcularProducao()">
                     </div>
                     <div class="flex items-end">
-                        <button onclick="adicionarProducao()" class="w-full bg-green-600 text-white p-2 rounded-lg hover:bg-green-700 transition">
+                        <button onclick="adicionarProducao()"
+                            class="w-full bg-green-600 text-white p-2 rounded-lg hover:bg-green-700 transition">
                             <i class="fas fa-plus mr-2"></i>Adicionar Safra
                         </button>
                     </div>
                 </div>
-                <div class="grid md:grid-cols-3 gap-4 mt-4 bg-white p-4 rounded border">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 bg-white p-4 rounded border">
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Eficiência de Conversão</label>
-                        <input type="text" id="eficienciaConversao" class="w-full p-2 border rounded-lg bg-gray-100" readonly>
+                        <input type="text" id="eficienciaConversao" class="w-full p-2 border rounded-lg bg-gray-100"
+                            readonly>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Custo por kg</label>
@@ -391,18 +546,18 @@
 
             <!-- Lista de Produções -->
             <div class="overflow-x-auto mb-6">
-                <table class="w-full border-collapse border border-gray-300">
+                <table class="w-full border-collapse border border-gray-300 text-sm">
                     <thead class="bg-gray-100">
                         <tr>
-                            <th class="border border-gray-300 p-3 text-left">Plantio</th>
-                            <th class="border border-gray-300 p-3 text-left">Colheita</th>
-                            <th class="border border-gray-300 p-3 text-left">Área (ha)</th>
-                            <th class="border border-gray-300 p-3 text-left">Mandioca (kg)</th>
-                            <th class="border border-gray-300 p-3 text-left">Farinha (kg)</th>
-                            <th class="border border-gray-300 p-3 text-left">Eficiência</th>
-                            <th class="border border-gray-300 p-3 text-left">Custo Total</th>
-                            <th class="border border-gray-300 p-3 text-left">Custo/kg</th>
-                            <th class="border border-gray-300 p-3 text-left">Ações</th>
+                            <th class="border border-gray-300 p-2 md:p-3 text-left">Plantio</th>
+                            <th class="border border-gray-300 p-2 md:p-3 text-left">Colheita</th>
+                            <th class="border border-gray-300 p-2 md:p-3 text-left">Área (ha)</th>
+                            <th class="border border-gray-300 p-2 md:p-3 text-left">Mandioca (kg)</th>
+                            <th class="border border-gray-300 p-2 md:p-3 text-left">Farinha (kg)</th>
+                            <th class="border border-gray-300 p-2 md:p-3 text-left">Eficiência</th>
+                            <th class="border border-gray-300 p-2 md:p-3 text-left">Custo Total</th>
+                            <th class="border border-gray-300 p-2 md:p-3 text-left">Custo/kg</th>
+                            <th class="border border-gray-300 p-2 md:p-3 text-left">Ações</th>
                         </tr>
                     </thead>
                     <tbody id="tabelaProducao"></tbody>
@@ -411,7 +566,7 @@
 
             <!-- Gráfico de Produtividade -->
             <div>
-                <h3 class="text-lg font-semibold text-gray-700 mb-4">Evolução da Produtividade</h3>
+                <h3 class="text-base md:text-lg font-semibold text-gray-700 mb-4">Evolução da Produtividade</h3>
                 <div class="chart-container">
                     <canvas id="graficoProducao"></canvas>
                 </div>
@@ -419,29 +574,33 @@
         </div>
 
         <!-- 4. Estoque -->
-        <div id="estoque" class="tab-content bg-white rounded-lg shadow-sm p-6">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-                <i class="fas fa-boxes text-green-600 mr-3"></i>Controle de Estoque
+        <div id="estoque" class="tab-content bg-white rounded-lg shadow-sm p-4 md:p-6">
+            <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-6 flex items-center">
+                <i class="fas fa-boxes text-green-600 mr-2 md:mr-3"></i>Controle de Estoque
             </h2>
 
-            <div class="grid md:grid-cols-2 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                 <!-- Insumos -->
                 <div>
-                    <h3 class="text-lg font-semibold text-gray-700 mb-4 bg-blue-100 p-3 rounded">
+                    <h3 class="text-base md:text-lg font-semibold text-gray-700 mb-4 bg-blue-100 p-3 rounded">
                         <i class="fas fa-seedling mr-2"></i>Insumos Agrícolas
                     </h3>
-                    
+
                     <!-- Adicionar Insumo -->
                     <div class="bg-blue-50 p-4 rounded-lg mb-4">
                         <div class="grid grid-cols-2 gap-2 mb-2">
-                            <input type="text" id="nomeInsumo" class="p-2 border rounded editable" placeholder="Nome do insumo">
-                            <input type="number" id="quantidadeInsumo" class="p-2 border rounded editable" placeholder="Quantidade">
+                            <input type="text" id="nomeInsumo" class="p-2 border rounded editable"
+                                placeholder="Nome do insumo">
+                            <input type="number" id="quantidadeInsumo" class="p-2 border rounded editable"
+                                placeholder="Quantidade">
                         </div>
                         <div class="grid grid-cols-2 gap-2 mb-2">
                             <input type="date" id="validadeInsumo" class="p-2 border rounded editable">
-                            <input type="number" id="minimoInsumo" class="p-2 border rounded editable" placeholder="Estoque mínimo">
+                            <input type="number" id="minimoInsumo" class="p-2 border rounded editable"
+                                placeholder="Estoque mínimo">
                         </div>
-                        <button onclick="adicionarInsumo()" class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 transition">
+                        <button onclick="adicionarInsumo()"
+                            class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 transition">
                             <i class="fas fa-plus mr-2"></i>Adicionar Insumo
                         </button>
                     </div>
@@ -452,22 +611,25 @@
 
                 <!-- Farinha Armazenada -->
                 <div>
-                    <h3 class="text-lg font-semibold text-gray-700 mb-4 bg-yellow-100 p-3 rounded">
+                    <h3 class="text-base md:text-lg font-semibold text-gray-700 mb-4 bg-yellow-100 p-3 rounded">
                         <i class="fas fa-warehouse mr-2"></i>Farinha Armazenada
                     </h3>
-                    
+
                     <!-- Adicionar Lote de Farinha -->
                     <div class="bg-yellow-50 p-4 rounded-lg mb-4">
                         <div class="grid grid-cols-2 gap-2 mb-2">
                             <input type="text" id="loteId" class="p-2 border rounded editable" placeholder="ID do Lote">
-                            <input type="number" id="quantidadeFarinha" class="p-2 border rounded editable" placeholder="Quantidade (kg)">
+                            <input type="number" id="quantidadeFarinha" class="p-2 border rounded editable"
+                                placeholder="Quantidade (kg)">
                         </div>
                         <div class="grid grid-cols-2 gap-2 mb-2">
                             <input type="date" id="dataProducaoFarinha" class="p-2 border rounded editable">
                             <input type="date" id="validadeFarinha" class="p-2 border rounded editable">
                         </div>
-                        <input type="number" id="custoArmazenamento" class="w-full p-2 border rounded editable mb-2" placeholder="Custo de Armazenamento (R$)">
-                        <button onclick="adicionarFarinha()" class="w-full bg-yellow-600 text-white p-2 rounded hover:bg-yellow-700 transition">
+                        <input type="number" id="custoArmazenamento" class="w-full p-2 border rounded editable mb-2"
+                            placeholder="Custo de Armazenamento (R$)">
+                        <button onclick="adicionarFarinha()"
+                            class="w-full bg-yellow-600 text-white p-2 rounded hover:bg-yellow-700 transition">
                             <i class="fas fa-plus mr-2"></i>Adicionar Lote
                         </button>
                     </div>
@@ -479,7 +641,7 @@
 
             <!-- Alertas de Estoque -->
             <div class="mt-8">
-                <h3 class="text-lg font-semibold text-red-700 mb-4 bg-red-100 p-3 rounded">
+                <h3 class="text-base md:text-lg font-semibold text-red-700 mb-4 bg-red-100 p-3 rounded">
                     <i class="fas fa-exclamation-triangle mr-2"></i>Alertas de Estoque
                 </h3>
                 <div id="alertasEstoque" class="space-y-2"></div>
@@ -487,18 +649,19 @@
         </div>
 
         <!-- 5. Gestão de Pessoas -->
-        <div id="pessoas" class="tab-content bg-white rounded-lg shadow-sm p-6">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-                <i class="fas fa-users text-green-600 mr-3"></i>Gestão de Pessoas
+        <div id="pessoas" class="tab-content bg-white rounded-lg shadow-sm p-4 md:p-6">
+            <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-6 flex items-center">
+                <i class="fas fa-users text-green-600 mr-2 md:mr-3"></i>Gestão de Pessoas
             </h2>
 
             <!-- Adicionar Funcionário -->
-            <div class="bg-purple-50 p-6 rounded-lg mb-6">
-                <h3 class="text-lg font-semibold text-purple-800 mb-4">Adicionar Funcionário</h3>
-                <div class="grid md:grid-cols-3 gap-4">
+            <div class="bg-purple-50 p-4 md:p-6 rounded-lg mb-4 md:mb-6">
+                <h3 class="text-base md:text-lg font-semibold text-purple-800 mb-4">Adicionar Funcionário</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Nome</label>
-                        <input type="text" id="nomeFuncionario" class="w-full p-2 border rounded-lg editable" placeholder="Nome completo">
+                        <input type="text" id="nomeFuncionario" class="w-full p-2 border rounded-lg editable"
+                            placeholder="Nome completo">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Tipo</label>
@@ -509,16 +672,19 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Salário Mensal (R$)</label>
-                        <input type="number" id="salarioFuncionario" class="w-full p-2 border rounded-lg editable" placeholder="0,00">
+                        <input type="number" id="salarioFuncionario" class="w-full p-2 border rounded-lg editable"
+                            placeholder="0,00">
                     </div>
                 </div>
-                <div class="grid md:grid-cols-2 gap-4 mt-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Função</label>
-                        <input type="text" id="funcaoFuncionario" class="w-full p-2 border rounded-lg editable" placeholder="Ex: Operador de máquinas">
+                        <input type="text" id="funcaoFuncionario" class="w-full p-2 border rounded-lg editable"
+                            placeholder="Ex: Operador de máquinas">
                     </div>
                     <div class="flex items-end">
-                        <button onclick="adicionarFuncionario()" class="w-full bg-purple-600 text-white p-2 rounded-lg hover:bg-purple-700 transition">
+                        <button onclick="adicionarFuncionario()"
+                            class="w-full bg-purple-600 text-white p-2 rounded-lg hover:bg-purple-700 transition">
                             <i class="fas fa-user-plus mr-2"></i>Adicionar
                         </button>
                     </div>
@@ -527,15 +693,15 @@
 
             <!-- Lista de Funcionários -->
             <div class="overflow-x-auto mb-6">
-                <table class="w-full border-collapse border border-gray-300">
+                <table class="w-full border-collapse border border-gray-300 text-sm">
                     <thead class="bg-gray-100">
                         <tr>
-                            <th class="border border-gray-300 p-3 text-left">Nome</th>
-                            <th class="border border-gray-300 p-3 text-left">Tipo</th>
-                            <th class="border border-gray-300 p-3 text-left">Função</th>
-                            <th class="border border-gray-300 p-3 text-left">Salário</th>
-                            <th class="border border-gray-300 p-3 text-left">Horas/Mês</th>
-                            <th class="border border-gray-300 p-3 text-left">Ações</th>
+                            <th class="border border-gray-300 p-2 md:p-3 text-left">Nome</th>
+                            <th class="border border-gray-300 p-2 md:p-3 text-left">Tipo</th>
+                            <th class="border border-gray-300 p-2 md:p-3 text-left">Função</th>
+                            <th class="border border-gray-300 p-2 md:p-3 text-left">Salário</th>
+                            <th class="border border-gray-300 p-2 md:p-3 text-left">Horas/Mês</th>
+                            <th class="border border-gray-300 p-2 md:p-3 text-left">Ações</th>
                         </tr>
                     </thead>
                     <tbody id="tabelaFuncionarios"></tbody>
@@ -543,9 +709,9 @@
             </div>
 
             <!-- Registro de Horas -->
-            <div class="bg-gray-50 p-6 rounded-lg mb-6">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">Registro de Horas Trabalhadas</h3>
-                <div class="grid md:grid-cols-4 gap-4">
+            <div class="bg-gray-50 p-4 md:p-6 rounded-lg mb-4 md:mb-6">
+                <h3 class="text-base md:text-lg font-semibold text-gray-800 mb-4">Registro de Horas Trabalhadas</h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Funcionário</label>
                         <select id="funcionarioHoras" class="w-full p-2 border rounded-lg editable">
@@ -558,10 +724,12 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Horas</label>
-                        <input type="number" id="horasTrabalhadas" class="w-full p-2 border rounded-lg editable" placeholder="8" step="0.5">
+                        <input type="number" id="horasTrabalhadas" class="w-full p-2 border rounded-lg editable"
+                            placeholder="8" step="0.5">
                     </div>
                     <div class="flex items-end">
-                        <button onclick="registrarHoras()" class="w-full bg-green-600 text-white p-2 rounded-lg hover:bg-green-700 transition">
+                        <button onclick="registrarHoras()"
+                            class="w-full bg-green-600 text-white p-2 rounded-lg hover:bg-green-700 transition">
                             <i class="fas fa-clock mr-2"></i>Registrar
                         </button>
                     </div>
@@ -569,7 +737,7 @@
             </div>
 
             <!-- Resumo de RH -->
-            <div class="grid md:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="bg-blue-100 p-4 rounded-lg">
                     <h4 class="font-semibold text-blue-800">Total de Funcionários</h4>
                     <div class="text-2xl font-bold text-blue-600" id="totalFuncionarios">0</div>
@@ -586,50 +754,57 @@
         </div>
 
         <!-- 6. Vendas -->
-        <div id="vendas" class="tab-content bg-white rounded-lg shadow-sm p-6">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-                <i class="fas fa-shopping-cart text-green-600 mr-3"></i>Controle de Vendas
+        <div id="vendas" class="tab-content bg-white rounded-lg shadow-sm p-4 md:p-6">
+            <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-6 flex items-center">
+                <i class="fas fa-shopping-cart text-green-600 mr-2 md:mr-3"></i>Controle de Vendas
             </h2>
 
             <!-- Formulário de Nova Venda -->
-            <div class="bg-green-50 p-6 rounded-lg mb-6">
-                <h3 class="text-lg font-semibold text-green-800 mb-4">Nova Venda</h3>
-                <div class="grid md:grid-cols-4 gap-4">
+            <div class="bg-green-50 p-4 md:p-6 rounded-lg mb-4 md:mb-6">
+                <h3 class="text-base md:text-lg font-semibold text-green-800 mb-4">Nova Venda</h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Data da Venda</label>
                         <input type="date" id="dataVenda" class="w-full p-2 border rounded-lg editable">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Cliente</label>
-                        <input type="text" id="clienteVenda" class="w-full p-2 border rounded-lg editable" placeholder="Nome do cliente">
+                        <input type="text" id="clienteVenda" class="w-full p-2 border rounded-lg editable"
+                            placeholder="Nome do cliente">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Produto</label>
-                        <select id="produtoVenda" class="w-full p-2 border rounded-lg editable" onchange="calcularVenda()">
+                        <select id="produtoVenda" class="w-full p-2 border rounded-lg editable"
+                            onchange="calcularVenda()">
                             <option value="mandioca">Mandioca in natura</option>
                             <option value="farinha">Farinha de mandioca</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Quantidade (kg)</label>
-                        <input type="number" id="quantidadeVenda" class="w-full p-2 border rounded-lg editable" placeholder="0" onchange="calcularVenda()">
+                        <input type="number" id="quantidadeVenda" class="w-full p-2 border rounded-lg editable"
+                            placeholder="0" onchange="calcularVenda()">
                     </div>
                 </div>
-                <div class="grid md:grid-cols-4 gap-4 mt-4">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Preço Unitário (R$/kg)</label>
-                        <input type="number" id="precoUnitario" class="w-full p-2 border rounded-lg editable" placeholder="0,00" step="0.01" onchange="calcularVenda()">
+                        <input type="number" id="precoUnitario" class="w-full p-2 border rounded-lg editable"
+                            placeholder="0,00" step="0.01" onchange="calcularVenda()">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Valor Total</label>
-                        <input type="text" id="valorTotalVenda" class="w-full p-2 border rounded-lg bg-gray-100" readonly>
+                        <input type="text" id="valorTotalVenda" class="w-full p-2 border rounded-lg bg-gray-100"
+                            readonly>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Taxa Processamento</label>
-                        <input type="text" id="taxaProcessamento" class="w-full p-2 border rounded-lg bg-gray-100" readonly>
+                        <input type="text" id="taxaProcessamento" class="w-full p-2 border rounded-lg bg-gray-100"
+                            readonly>
                     </div>
                     <div class="flex items-end">
-                        <button onclick="adicionarVenda()" class="w-full bg-green-600 text-white p-2 rounded-lg hover:bg-green-700 transition">
+                        <button onclick="adicionarVenda()"
+                            class="w-full bg-green-600 text-white p-2 rounded-lg hover:bg-green-700 transition">
                             <i class="fas fa-plus mr-2"></i>Registrar Venda
                         </button>
                     </div>
@@ -638,18 +813,18 @@
 
             <!-- Lista de Vendas -->
             <div class="overflow-x-auto mb-6">
-                <table class="w-full border-collapse border border-gray-300">
+                <table class="w-full border-collapse border border-gray-300 text-sm">
                     <thead class="bg-gray-100">
                         <tr>
-                            <th class="border border-gray-300 p-3 text-left">Data</th>
-                            <th class="border border-gray-300 p-3 text-left">Cliente</th>
-                            <th class="border border-gray-300 p-3 text-left">Produto</th>
-                            <th class="border border-gray-300 p-3 text-left">Quantidade</th>
-                            <th class="border border-gray-300 p-3 text-left">Preço Unit.</th>
-                            <th class="border border-gray-300 p-3 text-left">Total</th>
-                            <th class="border border-gray-300 p-3 text-left">Taxa</th>
-                            <th class="border border-gray-300 p-3 text-left">Líquido</th>
-                            <th class="border border-gray-300 p-3 text-left">Ações</th>
+                            <th class="border border-gray-300 p-2 md:p-3 text-left">Data</th>
+                            <th class="border border-gray-300 p-2 md:p-3 text-left">Cliente</th>
+                            <th class="border border-gray-300 p-2 md:p-3 text-left">Produto</th>
+                            <th class="border border-gray-300 p-2 md:p-3 text-left">Quantidade</th>
+                            <th class="border border-gray-300 p-2 md:p-3 text-left">Preço Unit.</th>
+                            <th class="border border-gray-300 p-2 md:p-3 text-left">Total</th>
+                            <th class="border border-gray-300 p-2 md:p-3 text-left">Taxa</th>
+                            <th class="border border-gray-300 p-2 md:p-3 text-left">Líquido</th>
+                            <th class="border border-gray-300 p-2 md:p-3 text-left">Ações</th>
                         </tr>
                     </thead>
                     <tbody id="tabelaVendas"></tbody>
@@ -657,18 +832,18 @@
             </div>
 
             <!-- Resumo de Vendas -->
-            <div class="grid md:grid-cols-4 gap-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
                 <div class="bg-green-100 p-4 rounded-lg">
                     <h4 class="font-semibold text-green-800">Faturamento Total</h4>
-                    <div class="text-2xl font-bold text-green-600" id="faturamentoTotal">R$ 0</div>
+                    <div class="text-xl md:text-2xl font-bold text-green-600" id="faturamentoTotal">R$ 0</div>
                 </div>
                 <div class="bg-blue-100 p-4 rounded-lg">
                     <h4 class="font-semibold text-blue-800">Total de Vendas</h4>
-                    <div class="text-2xl font-bold text-blue-600" id="totalVendas">0</div>
+                    <div class="text-xl md:text-2xl font-bold text-blue-600" id="totalVendas">0</div>
                 </div>
                 <div class="bg-yellow-100 p-4 rounded-lg">
                     <h4 class="font-semibold text-yellow-800">Ticket Médio</h4>
-                    <div class="text-2xl font-bold text-yellow-600" id="ticketMedio">R$ 0</div>
+                    <div class="text-xl md:text-2xl font-bold text-yellow-600" id="ticketMedio">R$ 0</div>
                 </div>
                 <div class="bg-purple-100 p-4 rounded-lg">
                     <h4 class="font-semibold text-purple-800">Melhor Cliente</h4>
@@ -677,15 +852,15 @@
             </div>
 
             <!-- Gráfico de Vendas -->
-            <div class="grid md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <h3 class="text-lg font-semibold text-gray-700 mb-4">Vendas por Produto</h3>
+                    <h3 class="text-base md:text-lg font-semibold text-gray-700 mb-4">Vendas por Produto</h3>
                     <div class="chart-container">
                         <canvas id="graficoVendasProduto"></canvas>
                     </div>
                 </div>
                 <div>
-                    <h3 class="text-lg font-semibold text-gray-700 mb-4">Evolução das Vendas</h3>
+                    <h3 class="text-base md:text-lg font-semibold text-gray-700 mb-4">Evolução das Vendas</h3>
                     <div class="chart-container">
                         <canvas id="graficoVendasEvolucao"></canvas>
                     </div>
@@ -694,246 +869,199 @@
         </div>
 
         <!-- 7. Dashboard Financeiro -->
-        <div id="dashboard" class="tab-content bg-white rounded-lg shadow-sm p-6">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-                <i class="fas fa-chart-line text-green-600 mr-3"></i>Dashboard Financeiro
+        <div id="dashboard" class="tab-content bg-white rounded-lg shadow-sm p-4 md:p-6">
+            <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-6 flex items-center">
+                <i class="fas fa-chart-line text-green-600 mr-2 md:mr-3"></i>Dashboard Financeiro
             </h2>
 
             <!-- KPIs Principais -->
-            <div class="grid md:grid-cols-5 gap-4 mb-8">
-                <div class="bg-gradient-to-r from-green-400 to-green-600 text-white p-6 rounded-lg shadow">
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+                <div class="bg-gradient-to-r from-green-400 to-green-600 text-white p-4 md:p-6 rounded-lg shadow">
                     <div class="flex items-center justify-between">
                         <div>
-                            <h3 class="text-lg font-semibold">Faturamento</h3>
-                            <div class="text-2xl font-bold" id="dashFaturamento">R$ 0</div>
+                            <h3 class="text-base md:text-lg font-semibold">Faturamento</h3>
+                            <div class="text-xl md:text-2xl font-bold" id="dashFaturamento">R$ 0</div>
                         </div>
-                        <i class="fas fa-money-bill-wave text-3xl opacity-75"></i>
+                        <i class="fas fa-money-bill-wave text-2xl md:text-3xl opacity-75"></i>
                     </div>
-                    <div class="mt-2 text-sm opacity-90">
-                        Meta: R$ 1.000.000
-                    </div>
+                    <div class="mt-2 text-sm opacity-90">Meta: R$ 1.000.000</div>
                 </div>
 
-                <div class="bg-gradient-to-r from-blue-400 to-blue-600 text-white p-6 rounded-lg shadow">
+                <div class="bg-gradient-to-r from-blue-400 to-blue-600 text-white p-4 md:p-6 rounded-lg shadow">
                     <div class="flex items-center justify-between">
                         <div>
-                            <h3 class="text-lg font-semibold">Lucro Líquido</h3>
-                            <div class="text-2xl font-bold" id="dashLucro">R$ 0</div>
+                            <h3 class="text-base md:text-lg font-semibold">Lucro Líquido</h3>
+                            <div class="text-xl md:text-2xl font-bold" id="dashLucro">R$ 0</div>
                         </div>
-                        <i class="fas fa-chart-line text-3xl opacity-75"></i>
+                        <i class="fas fa-chart-line text-2xl md:text-3xl opacity-75"></i>
                     </div>
-                    <div class="mt-2 text-sm opacity-90">
-                        Receitas - Despesas
-                    </div>
+                    <div class="mt-2 text-sm opacity-90">Receitas - Despesas</div>
                 </div>
 
-                <div class="bg-gradient-to-r from-purple-400 to-purple-600 text-white p-6 rounded-lg shadow">
+                <div class="bg-gradient-to-r from-purple-400 to-purple-600 text-white p-4 md:p-6 rounded-lg shadow">
                     <div class="flex items-center justify-between">
                         <div>
-                            <h3 class="text-lg font-semibold">ROI</h3>
-                            <div class="text-2xl font-bold" id="dashROI">0%</div>
+                            <h3 class="text-base md:text-lg font-semibold">ROI</h3>
+                            <div class="text-xl md:text-2xl font-bold" id="dashROI">0%</div>
                         </div>
-                        <i class="fas fa-percentage text-3xl opacity-75"></i>
+                        <i class="fas fa-percentage text-2xl md:text-3xl opacity-75"></i>
                     </div>
-                    <div class="mt-2 text-sm opacity-90">
-                        Retorno do Investimento
-                    </div>
+                    <div class="mt-2 text-sm opacity-90">Retorno do Investimento</div>
                 </div>
 
-                <div class="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white p-6 rounded-lg shadow">
+                <div class="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white p-4 md:p-6 rounded-lg shadow">
                     <div class="flex items-center justify-between">
                         <div>
-                            <h3 class="text-lg font-semibold">Margem</h3>
-                            <div class="text-2xl font-bold" id="dashMargem">0%</div>
+                            <h3 class="text-base md:text-lg font-semibold">Margem</h3>
+                            <div class="text-xl md:text-2xl font-bold" id="dashMargem">0%</div>
                         </div>
-                        <i class="fas fa-calculator text-3xl opacity-75"></i>
+                        <i class="fas fa-calculator text-2xl md:text-3xl opacity-75"></i>
                     </div>
-                    <div class="mt-2 text-sm opacity-90">
-                        Lucro / Receita
-                    </div>
+                    <div class="mt-2 text-sm opacity-90">Margem de Lucro</div>
                 </div>
 
-                <div class="bg-gradient-to-r from-red-400 to-red-600 text-white p-6 rounded-lg shadow">
+                <div class="bg-gradient-to-r from-red-400 to-red-600 text-white p-4 md:p-6 rounded-lg shadow">
                     <div class="flex items-center justify-between">
                         <div>
-                            <h3 class="text-lg font-semibold">Ponto Equilíbrio</h3>
-                            <div class="text-2xl font-bold" id="dashPontoEquilibrio">R$ 0</div>
+                            <h3 class="text-base md:text-lg font-semibold">P. Equilíbrio</h3>
+                            <div class="text-xl md:text-2xl font-bold" id="dashPontoEquilibrio">R$ 0</div>
                         </div>
-                        <i class="fas fa-balance-scale text-3xl opacity-75"></i>
+                        <i class="fas fa-balance-scale text-2xl md:text-3xl opacity-75"></i>
                     </div>
-                    <div class="mt-2 text-sm opacity-90">
-                        Para cobrir custos
-                    </div>
+                    <div class="mt-2 text-sm opacity-90">Ponto de Equilíbrio</div>
                 </div>
             </div>
 
-            <!-- Gráficos do Dashboard -->
-            <div class="grid md:grid-cols-2 gap-6">
+            <!-- Progresso da Meta -->
+            <div class="bg-green-50 p-4 md:p-6 rounded-lg mb-8">
+                <h3 class="text-base md:text-lg font-semibold text-green-800 mb-4">Progresso para Meta de R$ 1.000.000
+                </h3>
+                <div class="w-full bg-green-200 rounded-full h-6">
+                    <div class="bg-green-600 h-6 rounded-full transition-all duration-500" id="progressBarDash"
+                        style="width: 0%"></div>
+                </div>
+                <div class="flex justify-between mt-2 text-sm text-green-700">
+                    <span>R$ 0</span>
+                    <span id="progressoTexto">0% da Meta</span>
+                    <span>R$ 1.000.000</span>
+                </div>
+            </div>
+
+            <!-- Gráficos Financeiros -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <h3 class="text-lg font-semibold text-gray-700 mb-4">Evolução Financeira</h3>
+                    <h3 class="text-base md:text-lg font-semibold text-gray-700 mb-4">Evolução Financeira</h3>
                     <div class="chart-container">
                         <canvas id="graficoEvolucaoFinanceira"></canvas>
                     </div>
                 </div>
                 <div>
-                    <h3 class="text-lg font-semibold text-gray-700 mb-4">Distribuição de Custos</h3>
+                    <h3 class="text-base md:text-lg font-semibold text-gray-700 mb-4">Distribuição de Custos</h3>
                     <div class="chart-container">
                         <canvas id="graficoDistribuicaoCustos"></canvas>
                     </div>
                 </div>
             </div>
-
-            <!-- Progresso da Meta -->
-            <div class="mt-8 bg-gray-50 p-6 rounded-lg">
-                <h3 class="text-lg font-semibold text-gray-700 mb-4">Progresso para Meta de R$ 1.000.000</h3>
-                <div class="w-full bg-gray-200 rounded-full h-6 mb-4">
-                    <div class="bg-gradient-to-r from-green-400 to-green-600 h-6 rounded-full transition-all duration-500" id="progressoMeta" style="width: 0%"></div>
-                </div>
-                <div class="flex justify-between text-sm text-gray-600">
-                    <span>R$ 0</span>
-                    <span id="percentualMeta">0%</span>
-                    <span>R$ 1.000.000</span>
-                </div>
-            </div>
         </div>
 
-        <!-- 8. Projeções e Cenários -->
-        <div id="projecoes" class="tab-content bg-white rounded-lg shadow-sm p-6">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-                <i class="fas fa-crystal-ball text-green-600 mr-3"></i>Projeções e Cenários
+        <!-- 8. Projeções -->
+        <div id="projecoes" class="tab-content bg-white rounded-lg shadow-sm p-4 md:p-6">
+            <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-6 flex items-center">
+                <i class="fas fa-crystal-ball text-green-600 mr-2 md:mr-3"></i>Projeções e Cenários
             </h2>
 
             <!-- Simulador de Cenários -->
-            <div class="grid md:grid-cols-3 gap-6 mb-8">
-                <!-- Cenário Conservador -->
-                <div class="bg-red-50 border-2 border-red-200 rounded-lg p-6">
-                    <h3 class="text-lg font-bold text-red-800 mb-4 flex items-center">
-                        <i class="fas fa-arrow-down mr-2"></i>Conservador
-                    </h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-yellow-50 p-4 md:p-6 rounded-lg">
+                    <h3 class="text-base md:text-lg font-semibold text-yellow-800 mb-4">Cenário Conservador</h3>
                     <div class="space-y-3">
                         <div>
-                            <label class="block text-sm font-medium text-red-600">Produtividade (kg/ha)</label>
-                            <input type="number" id="prodConservador" class="w-full p-2 border rounded editable" value="15000" onchange="calcularCenarios()">
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Produtividade (kg/ha)</label>
+                            <input type="number" id="prodConservador" class="w-full p-2 border rounded-lg editable"
+                                value="15000" onchange="calcularCenarios()">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-red-600">Preço Mandioca (R$/kg)</label>
-                            <input type="number" id="precoMandiocaConservador" class="w-full p-2 border rounded editable" value="0.80" step="0.01" onchange="calcularCenarios()">
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Preço Farinha (R$/kg)</label>
+                            <input type="number" id="precoConservador" class="w-full p-2 border rounded-lg editable"
+                                value="3.50" step="0.01" onchange="calcularCenarios()">
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-red-600">Preço Farinha (R$/kg)</label>
-                            <input type="number" id="precoFarinhaConservador" class="w-full p-2 border rounded editable" value="4.00" step="0.01" onchange="calcularCenarios()">
+                        <div class="bg-yellow-100 p-3 rounded">
+                            <div class="text-sm font-medium text-yellow-800">Receita Anual Projetada</div>
+                            <div class="text-lg font-bold text-yellow-600" id="receitaConservador">R$ 0</div>
                         </div>
-                    </div>
-                    <div class="mt-4 pt-4 border-t border-red-200">
-                        <div class="font-bold text-red-800">Projeção Anual:</div>
-                        <div class="text-xl font-bold text-red-600" id="resultadoConservador">R$ 0</div>
                     </div>
                 </div>
 
-                <!-- Cenário Realista -->
-                <div class="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-6">
-                    <h3 class="text-lg font-bold text-yellow-800 mb-4 flex items-center">
-                        <i class="fas fa-minus mr-2"></i>Realista
-                    </h3>
+                <div class="bg-blue-50 p-4 md:p-6 rounded-lg">
+                    <h3 class="text-base md:text-lg font-semibold text-blue-800 mb-4">Cenário Realista</h3>
                     <div class="space-y-3">
                         <div>
-                            <label class="block text-sm font-medium text-yellow-600">Produtividade (kg/ha)</label>
-                            <input type="number" id="prodRealista" class="w-full p-2 border rounded editable" value="20000" onchange="calcularCenarios()">
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Produtividade (kg/ha)</label>
+                            <input type="number" id="prodRealista" class="w-full p-2 border rounded-lg editable"
+                                value="20000" onchange="calcularCenarios()">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-yellow-600">Preço Mandioca (R$/kg)</label>
-                            <input type="number" id="precoMandiocaRealista" class="w-full p-2 border rounded editable" value="1.00" step="0.01" onchange="calcularCenarios()">
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Preço Farinha (R$/kg)</label>
+                            <input type="number" id="precoRealista" class="w-full p-2 border rounded-lg editable"
+                                value="4.00" step="0.01" onchange="calcularCenarios()">
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-yellow-600">Preço Farinha (R$/kg)</label>
-                            <input type="number" id="precoFarinhaRealista" class="w-full p-2 border rounded editable" value="5.00" step="0.01" onchange="calcularCenarios()">
+                        <div class="bg-blue-100 p-3 rounded">
+                            <div class="text-sm font-medium text-blue-800">Receita Anual Projetada</div>
+                            <div class="text-lg font-bold text-blue-600" id="receitaRealista">R$ 0</div>
                         </div>
-                    </div>
-                    <div class="mt-4 pt-4 border-t border-yellow-300">
-                        <div class="font-bold text-yellow-800">Projeção Anual:</div>
-                        <div class="text-xl font-bold text-yellow-600" id="resultadoRealista">R$ 0</div>
                     </div>
                 </div>
 
-                <!-- Cenário Otimista -->
-                <div class="bg-green-50 border-2 border-green-200 rounded-lg p-6">
-                    <h3 class="text-lg font-bold text-green-800 mb-4 flex items-center">
-                        <i class="fas fa-arrow-up mr-2"></i>Otimista
-                    </h3>
+                <div class="bg-green-50 p-4 md:p-6 rounded-lg">
+                    <h3 class="text-base md:text-lg font-semibold text-green-800 mb-4">Cenário Otimista</h3>
                     <div class="space-y-3">
                         <div>
-                            <label class="block text-sm font-medium text-green-600">Produtividade (kg/ha)</label>
-                            <input type="number" id="prodOtimista" class="w-full p-2 border rounded editable" value="25000" onchange="calcularCenarios()">
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Produtividade (kg/ha)</label>
+                            <input type="number" id="prodOtimista" class="w-full p-2 border rounded-lg editable"
+                                value="25000" onchange="calcularCenarios()">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-green-600">Preço Mandioca (R$/kg)</label>
-                            <input type="number" id="precoMandiocaOtimista" class="w-full p-2 border rounded editable" value="1.20" step="0.01" onchange="calcularCenarios()">
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Preço Farinha (R$/kg)</label>
+                            <input type="number" id="precoOtimista" class="w-full p-2 border rounded-lg editable"
+                                value="4.50" step="0.01" onchange="calcularCenarios()">
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-green-600">Preço Farinha (R$/kg)</label>
-                            <input type="number" id="precoFarinhaOtimista" class="w-full p-2 border rounded editable" value="6.00" step="0.01" onchange="calcularCenarios()">
+                        <div class="bg-green-100 p-3 rounded">
+                            <div class="text-sm font-medium text-green-800">Receita Anual Projetada</div>
+                            <div class="text-lg font-bold text-green-600" id="receitaOtimista">R$ 0</div>
                         </div>
-                    </div>
-                    <div class="mt-4 pt-4 border-t border-green-200">
-                        <div class="font-bold text-green-800">Projeção Anual:</div>
-                        <div class="text-xl font-bold text-green-600" id="resultadoOtimista">R$ 0</div>
                     </div>
                 </div>
             </div>
 
             <!-- Simulador de Expansão -->
-            <div class="bg-blue-50 p-6 rounded-lg mb-6 border-2 border-blue-200">
-                <h3 class="text-lg font-bold text-blue-800 mb-4">
-                    <i class="fas fa-expand-arrows-alt mr-2"></i>Simulador de Expansão
-                </h3>
-                <div class="grid md:grid-cols-4 gap-4">
+            <div class="bg-purple-50 p-4 md:p-6 rounded-lg mb-8">
+                <h3 class="text-base md:text-lg font-semibold text-purple-800 mb-4">Simulador de Expansão</h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-blue-600 mb-1">Meta de Faturamento (R$)</label>
-                        <input type="number" id="metaFaturamento" class="w-full p-2 border rounded editable" value="1000000" onchange="calcularExpansao()">
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Meta de Faturamento (R$)</label>
+                        <input type="number" id="metaFaturamento" class="w-full p-2 border rounded-lg editable"
+                            value="1000000" onchange="calcularExpansao()">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-blue-600 mb-1">Faturamento por Hectare (R$)</label>
-                        <input type="number" id="faturamentoPorHa" class="w-full p-2 border rounded editable" value="50000" onchange="calcularExpansao()">
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Área Necessária (ha)</label>
+                        <input type="text" id="areaNecessaria" class="w-full p-2 border rounded-lg bg-gray-100"
+                            readonly>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-blue-600 mb-1">Área Necessária (ha)</label>
-                        <input type="text" id="areaNecessaria" class="w-full p-2 border rounded bg-gray-100" readonly>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Investimento Adicional</label>
+                        <input type="text" id="investimentoAdicional" class="w-full p-2 border rounded-lg bg-gray-100"
+                            readonly>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-blue-600 mb-1">Investimento Adicional</label>
-                        <input type="text" id="investimentoAdicional" class="w-full p-2 border rounded bg-gray-100" readonly>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Simulador de Tempo para Meta -->
-            <div class="bg-purple-50 p-6 rounded-lg mb-6 border-2 border-purple-200">
-                <h3 class="text-lg font-bold text-purple-800 mb-4">
-                    <i class="fas fa-clock mr-2"></i>Tempo para Atingir a Meta
-                </h3>
-                <div class="grid md:grid-cols-4 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-purple-600 mb-1">Faturamento Atual Mensal (R$)</label>
-                        <input type="number" id="faturamentoAtual" class="w-full p-2 border rounded editable" value="0" onchange="calcularTempo()">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-purple-600 mb-1">Crescimento Mensal (%)</label>
-                        <input type="number" id="crescimentoMensal" class="w-full p-2 border rounded editable" value="5" step="0.1" onchange="calcularTempo()">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-purple-600 mb-1">Tempo Estimado</label>
-                        <input type="text" id="tempoEstimado" class="w-full p-2 border rounded bg-gray-100" readonly>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-purple-600 mb-1">Meta Mensal Necessária</label>
-                        <input type="text" id="metaMensal" class="w-full p-2 border rounded bg-gray-100" readonly>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Tempo para Meta</label>
+                        <input type="text" id="tempoMeta" class="w-full p-2 border rounded-lg bg-gray-100" readonly>
                     </div>
                 </div>
             </div>
 
             <!-- Gráfico de Projeções -->
             <div>
-                <h3 class="text-lg font-semibold text-gray-700 mb-4">Comparação de Cenários</h3>
+                <h3 class="text-base md:text-lg font-semibold text-gray-700 mb-4">Comparativo de Cenários</h3>
                 <div class="chart-container">
                     <canvas id="graficoProjecoes"></canvas>
                 </div>
@@ -942,170 +1070,216 @@
     </div>
 
     <script>
-        // ============= SISTEMA DE AUTENTICAÇÃO =============
-        const AUTH_DATA = {
-            username: 'fzmeuparaiso',
-            password: 'FZ10082025MP#'
-        };
-
+        // Variáveis globais
         let currentUser = null;
-
-        function togglePassword() {
-            const passwordInput = document.getElementById('password');
-            const toggleIcon = document.getElementById('toggleIcon');
-            
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                toggleIcon.className = 'fas fa-eye-slash';
-            } else {
-                passwordInput.type = 'password';
-                toggleIcon.className = 'fas fa-eye';
-            }
-        }
-
-        function login(username, password) {
-            if (username === AUTH_DATA.username && password === AUTH_DATA.password) {
-                currentUser = username;
-                sessionStorage.setItem('fazenda_auth', username);
-                document.getElementById('currentUser').textContent = username;
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('mainSystem').classList.add('authenticated');
-                
-                // Carregar dados do usuário após login
-                carregarDados();
-                return true;
-            }
-            return false;
-        }
-
-        function logout() {
-            if (confirm('Deseja realmente sair do sistema?')) {
-                currentUser = null;
-                sessionStorage.removeItem('fazenda_auth');
-                document.getElementById('loginScreen').style.display = 'flex';
-                document.getElementById('mainSystem').classList.remove('authenticated');
-                document.getElementById('loginForm').reset();
-                document.getElementById('loginError').classList.add('hidden');
-            }
-        }
-
-        function checkAuth() {
-            const savedAuth = sessionStorage.getItem('fazenda_auth');
-            if (savedAuth === AUTH_DATA.username) {
-                currentUser = savedAuth;
-                document.getElementById('currentUser').textContent = savedAuth;
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('mainSystem').classList.add('authenticated');
-                return true;
-            }
-            return false;
-        }
-
-        // Event listener para formulário de login
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            
-            if (login(username, password)) {
-                document.getElementById('loginError').classList.add('hidden');
-            } else {
-                document.getElementById('loginError').classList.remove('hidden');
-                setTimeout(() => {
-                    document.getElementById('loginError').classList.add('hidden');
-                }, 3000);
-            }
-        });
-
-        // ============= SISTEMA DE PERSISTÊNCIA MULTI-DISPOSITIVO =============
-        
-        // Variáveis globais para armazenamento de dados
         let dadosInvestimentos = [];
         let dadosProducao = [];
-        let dadosEstoque = {
-            insumos: [],
-            farinha: []
-        };
+        let dadosEstoque = { insumos: [], farinha: [] };
         let dadosFuncionarios = [];
         let dadosHoras = [];
         let dadosVendas = [];
+        let propriedade = {};
 
-        // Função para salvar dados (local e "servidor")
-        function salvarDados() {
-            if (!currentUser) return;
-            
-            const dados = {
-                usuario: currentUser,
-                timestamp: new Date().toISOString(),
-                propriedade: {
-                    nome: document.getElementById('nomePropriedade')?.value || '',
-                    areaHa: document.getElementById('areaHa')?.value || 0,
-                    localizacao: document.getElementById('localizacao')?.value || '',
-                    valorTerra: document.getElementById('valorTerra')?.value || 0,
-                    limpezaTerreno: document.getElementById('limpezaTerreno')?.value || 0,
-                    insumosAgricolas: document.getElementById('insumosAgricolas')?.value || 0,
-                    ferramentasMaquinario: document.getElementById('ferramentasMaquinario')?.value || 0,
-                    infraestrutura: document.getElementById('infraestrutura')?.value || 0,
-                    maoObraInicial: document.getElementById('maoObraInicial')?.value || 0
-                },
-                investimentos: dadosInvestimentos,
-                producao: dadosProducao,
-                estoque: dadosEstoque,
-                funcionarios: dadosFuncionarios,
-                horas: dadosHoras,
-                vendas: dadosVendas
-            };
+        // Aguardar carregamento dos módulos Firebase
+        setTimeout(() => {
+            initializeSystem();
+        }, 1000);
 
-            // Salvar localmente
-            localStorage.setItem(`fazendaMandiocaDados_${currentUser}`, JSON.stringify(dados));
-            
-            // Simular salvamento no "servidor" (usando uma chave global)
-            localStorage.setItem(`fazendaServidor_${currentUser}`, JSON.stringify(dados));
-            
-            console.log('Dados salvos com sucesso para o usuário:', currentUser);
+        function initializeSystem() {
+            // Verificar autenticação
+            window.firebaseAuth.onAuthStateChanged(window.auth, (user) => {
+                if (user) {
+                    currentUser = user.email;
+                    document.getElementById('currentUser').textContent = currentUser;
+                    showMainSystem();
+                    carregarDados();
+                } else {
+                    showLoginScreen();
+                }
+            });
+
+            // Event listeners
+            setupEventListeners();
         }
 
-        // Função para carregar dados (local e "servidor")
-        function carregarDados() {
-            if (!currentUser) return;
-            
+        function setupEventListeners() {
+            // Tabs
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+            });
+
+            // Auto-save
+            setInterval(salvarDados, 30000); // Auto-save a cada 30 segundos
+        }
+
+        // Autenticação Firebase
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggleIcon = document.getElementById('toggleIcon');
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            }
+        }
+
+        async function loginUser() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+
+            if (!email || !password) {
+                showAuthMessage('Por favor, preencha todos os campos!', 'error');
+                return;
+            }
+
             try {
-                // Tentar carregar do "servidor" primeiro
-                let dadosSalvos = localStorage.getItem(`fazendaServidor_${currentUser}`);
-                
-                // Se não encontrar no servidor, tentar localmente
-                if (!dadosSalvos) {
-                    dadosSalvos = localStorage.getItem(`fazendaMandiocaDados_${currentUser}`);
+                loginBtn.innerHTML = '<div class="loading mr-2"></div>Entrando...';
+                loginBtn.disabled = true;
+
+                await window.firebaseAuth.signInWithEmailAndPassword(window.auth, email, password);
+                showAuthMessage('Login realizado com sucesso!', 'success');
+            } catch (error) {
+                console.error('Erro no login:', error);
+                let errorMessage = 'Erro no login. Tente novamente.';
+
+                if (error.code === 'auth/user-not-found') {
+                    errorMessage = 'Usuário não encontrado.';
+                } else if (error.code === 'auth/wrong-password') {
+                    errorMessage = 'Senha incorreta.';
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessage = 'Email inválido.';
                 }
-                
-                if (dadosSalvos) {
-                    const dados = JSON.parse(dadosSalvos);
-                    
-                    // Restaurar dados da propriedade
-                    if (dados.propriedade) {
-                        document.getElementById('nomePropriedade').value = dados.propriedade.nome || '';
-                        document.getElementById('areaHa').value = dados.propriedade.areaHa || 0;
-                        document.getElementById('localizacao').value = dados.propriedade.localizacao || '';
-                        document.getElementById('valorTerra').value = dados.propriedade.valorTerra || 0;
-                        document.getElementById('limpezaTerreno').value = dados.propriedade.limpezaTerreno || 0;
-                        document.getElementById('insumosAgricolas').value = dados.propriedade.insumosAgricolas || 0;
-                        document.getElementById('ferramentasMaquinario').value = dados.propriedade.ferramentasMaquinario || 0;
-                        document.getElementById('infraestrutura').value = dados.propriedade.infraestrutura || 0;
-                        document.getElementById('maoObraInicial').value = dados.propriedade.maoObraInicial || 0;
-                        
-                        calcularArea();
-                        calcularInvestimentoTotal();
-                    }
-                    
-                    // Restaurar dados das outras seções
+
+                showAuthMessage(errorMessage, 'error');
+            } finally {
+                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i>Entrar';
+                loginBtn.disabled = false;
+            }
+        }
+
+        async function registerUser() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const registerBtn = document.getElementById('registerBtn');
+
+            if (!email || !password) {
+                showAuthMessage('Por favor, preencha todos os campos!', 'error');
+                return;
+            }
+
+            if (password.length < 6) {
+                showAuthMessage('A senha deve ter pelo menos 6 caracteres.', 'error');
+                return;
+            }
+
+            try {
+                registerBtn.innerHTML = '<div class="loading mr-2"></div>Cadastrando...';
+                registerBtn.disabled = true;
+
+                await window.firebaseAuth.createUserWithEmailAndPassword(window.auth, email, password);
+                showAuthMessage('Conta criada com sucesso!', 'success');
+            } catch (error) {
+                console.error('Erro no cadastro:', error);
+                let errorMessage = 'Erro no cadastro. Tente novamente.';
+
+                if (error.code === 'auth/email-already-in-use') {
+                    errorMessage = 'Este email já está em uso.';
+                } else if (error.code === 'auth/weak-password') {
+                    errorMessage = 'Senha muito fraca.';
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessage = 'Email inválido.';
+                }
+
+                showAuthMessage(errorMessage, 'error');
+            } finally {
+                registerBtn.innerHTML = '<i class="fas fa-user-plus mr-2"></i>Cadastrar';
+                registerBtn.disabled = false;
+            }
+        }
+
+        async function logoutUser() {
+            try {
+                await salvarDados();
+                await window.firebaseAuth.signOut(window.auth);
+                showAuthMessage('Logout realizado com sucesso!', 'success');
+            } catch (error) {
+                console.error('Erro no logout:', error);
+            }
+        }
+
+        function showAuthMessage(message, type) {
+            const authMessage = document.getElementById('authMessage');
+            authMessage.className = `mt-4 p-4 rounded-lg text-center ${type === 'error' ? 'bg-red-100 border border-red-300 text-red-700' : 'bg-green-100 border border-green-300 text-green-700'}`;
+            authMessage.innerHTML = `<i class="fas ${type === 'error' ? 'fa-exclamation-triangle' : 'fa-check-circle'} mr-2"></i>${message}`;
+            authMessage.classList.remove('hidden');
+
+            setTimeout(() => {
+                authMessage.classList.add('hidden');
+            }, 5000);
+        }
+
+        function showLoginScreen() {
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('mainSystem').classList.remove('authenticated');
+        }
+
+        function showMainSystem() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('mainSystem').classList.add('authenticated');
+        }
+
+        // Persistência de dados com Firestore
+        async function salvarDados() {
+            if (!currentUser) return;
+
+            try {
+                const dados = {
+                    usuario: currentUser,
+                    timestamp: new Date().toISOString(),
+                    propriedade: propriedade,
+                    investimentos: dadosInvestimentos,
+                    producao: dadosProducao,
+                    estoque: dadosEstoque,
+                    funcionarios: dadosFuncionarios,
+                    horas: dadosHoras,
+                    vendas: dadosVendas
+                };
+
+                const userDocRef = window.firestore.doc(window.db, 'fazendas', currentUser);
+                await window.firestore.setDoc(userDocRef, dados);
+
+                console.log('Dados salvos com sucesso!');
+            } catch (error) {
+                console.error('Erro ao salvar dados:', error);
+            }
+        }
+
+        async function carregarDados() {
+            if (!currentUser) return;
+
+            try {
+                const userDocRef = window.firestore.doc(window.db, 'fazendas', currentUser);
+                const docSnap = await window.firestore.getDoc(userDocRef);
+
+                if (docSnap.exists()) {
+                    const dados = docSnap.data();
+
+                    propriedade = dados.propriedade || {};
                     dadosInvestimentos = dados.investimentos || [];
                     dadosProducao = dados.producao || [];
                     dadosEstoque = dados.estoque || { insumos: [], farinha: [] };
                     dadosFuncionarios = dados.funcionarios || [];
                     dadosHoras = dados.horas || [];
                     dadosVendas = dados.vendas || [];
-                    
-                    // Atualizar todas as tabelas e gráficos
+
+                    // Carregar dados na interface
+                    carregarPropriedade();
                     atualizarTabelaInvestimentos();
                     atualizarTabelaProducao();
                     atualizarListaInsumos();
@@ -1113,97 +1287,87 @@
                     atualizarTabelaFuncionarios();
                     atualizarTabelaVendas();
                     atualizarDashboard();
-                    atualizarProgressoMeta();
                     calcularCenarios();
-                    
-                    console.log('Dados carregados com sucesso para o usuário:', currentUser);
+                    calcularExpansao();
+
+                    console.log('Dados carregados com sucesso!');
+                } else {
+                    console.log('Nenhum dado encontrado, iniciando com dados vazios.');
                 }
             } catch (error) {
                 console.error('Erro ao carregar dados:', error);
             }
         }
 
-        // ============= CÓDIGO ORIGINAL DO SISTEMA =============
-        
-        // Navegação por abas
-        document.addEventListener('DOMContentLoaded', function() {
-            // Verificar autenticação primeiro
-            if (!checkAuth()) {
-                document.getElementById('loginScreen').style.display = 'flex';
-                return;
-            }
-
-            // Configurar navegação por abas
-            const tabButtons = document.querySelectorAll('.tab-btn');
-            const tabContents = document.querySelectorAll('.tab-content');
-
-            tabButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    const targetTab = button.getAttribute('data-tab');
-                    
-                    // Remover classe active de todos os botões e conteúdos
-                    tabButtons.forEach(btn => btn.classList.remove('active', 'text-green-600', 'border-green-600'));
-                    tabContents.forEach(content => content.classList.remove('active'));
-                    
-                    // Adicionar classe active ao botão clicado
-                    button.classList.add('active', 'text-green-600', 'border-green-600');
-                    
-                    // Mostrar o conteúdo correspondente
-                    document.getElementById(targetTab).classList.add('active');
-                    
-                    // Atualizar gráficos se necessário
-                    setTimeout(() => {
-                        if (targetTab === 'investimentos') {
-                            atualizarGraficosInvestimentos();
-                        } else if (targetTab === 'producao') {
-                            atualizarGraficoProducao();
-                        } else if (targetTab === 'vendas') {
-                            atualizarGraficosVendas();
-                        } else if (targetTab === 'dashboard') {
-                            atualizarDashboard();
-                        } else if (targetTab === 'projecoes') {
-                            atualizarGraficoProjecoes();
-                        }
-                    }, 100);
-                });
+        // Navegação entre abas
+        function switchTab(tabName) {
+            // Remover classe active de todas as abas
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active', 'text-green-600', 'border-green-600');
+                btn.classList.add('text-gray-600', 'border-transparent');
             });
 
-            // Carregar dados se estiver autenticado
-            if (currentUser) {
-                carregarDados();
-            }
+            // Ativar aba selecionada
+            document.getElementById(tabName).classList.add('active');
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active', 'text-green-600', 'border-green-600');
+            document.querySelector(`[data-tab="${tabName}"]`).classList.remove('text-gray-600', 'border-transparent');
+        }
 
-            // Auto-salvamento a cada 30 segundos
-            setInterval(salvarDados, 30000);
-        });
-
-        // Salvar antes de sair da página
-        window.addEventListener('beforeunload', salvarDados);
-
-        // ============= FUNÇÕES DA PROPRIEDADE =============
-        
+        // Funções de cálculo da propriedade
         function calcularArea() {
-            const areaHa = parseFloat(document.getElementById('areaHa').value) || 0;
-            const areaM2 = areaHa * 10000;
-            document.getElementById('areaM2').value = areaM2;
-            salvarDados();
+            const hectares = parseFloat(document.getElementById('areaHa').value) || 0;
+            const metros = hectares * 10000;
+            document.getElementById('areaM2').value = metros;
+            salvarPropriedade();
         }
 
         function calcularInvestimentoTotal() {
             const valorTerra = parseFloat(document.getElementById('valorTerra').value) || 0;
-            const limpezaTerreno = parseFloat(document.getElementById('limpezaTerreno').value) || 0;
-            const insumosAgricolas = parseFloat(document.getElementById('insumosAgricolas').value) || 0;
-            const ferramentasMaquinario = parseFloat(document.getElementById('ferramentasMaquinario').value) || 0;
+            const limpeza = parseFloat(document.getElementById('limpezaTerreno').value) || 0;
+            const insumos = parseFloat(document.getElementById('insumosAgricolas').value) || 0;
+            const ferramentas = parseFloat(document.getElementById('ferramentasMaquinario').value) || 0;
             const infraestrutura = parseFloat(document.getElementById('infraestrutura').value) || 0;
-            const maoObraInicial = parseFloat(document.getElementById('maoObraInicial').value) || 0;
-            
-            const total = valorTerra + limpezaTerreno + insumosAgricolas + ferramentasMaquinario + infraestrutura + maoObraInicial;
+            const maoObra = parseFloat(document.getElementById('maoObraInicial').value) || 0;
+
+            const total = valorTerra + limpeza + insumos + ferramentas + infraestrutura + maoObra;
             document.getElementById('totalInvestimento').textContent = formatarMoeda(total);
+            salvarPropriedade();
+        }
+
+        function salvarPropriedade() {
+            propriedade = {
+                nome: document.getElementById('nomePropriedade').value,
+                areaHa: parseFloat(document.getElementById('areaHa').value) || 0,
+                areaM2: parseFloat(document.getElementById('areaM2').value) || 0,
+                localizacao: document.getElementById('localizacao').value,
+                valorTerra: parseFloat(document.getElementById('valorTerra').value) || 0,
+                limpezaTerreno: parseFloat(document.getElementById('limpezaTerreno').value) || 0,
+                insumosAgricolas: parseFloat(document.getElementById('insumosAgricolas').value) || 0,
+                ferramentasMaquinario: parseFloat(document.getElementById('ferramentasMaquinario').value) || 0,
+                infraestrutura: parseFloat(document.getElementById('infraestrutura').value) || 0,
+                maoObraInicial: parseFloat(document.getElementById('maoObraInicial').value) || 0
+            };
             salvarDados();
         }
 
-        // ============= FUNÇÕES DE INVESTIMENTOS =============
-        
+        function carregarPropriedade() {
+            if (propriedade.nome) document.getElementById('nomePropriedade').value = propriedade.nome;
+            if (propriedade.areaHa) document.getElementById('areaHa').value = propriedade.areaHa;
+            if (propriedade.areaM2) document.getElementById('areaM2').value = propriedade.areaM2;
+            if (propriedade.localizacao) document.getElementById('localizacao').value = propriedade.localizacao;
+            if (propriedade.valorTerra) document.getElementById('valorTerra').value = propriedade.valorTerra;
+            if (propriedade.limpezaTerreno) document.getElementById('limpezaTerreno').value = propriedade.limpezaTerreno;
+            if (propriedade.insumosAgricolas) document.getElementById('insumosAgricolas').value = propriedade.insumosAgricolas;
+            if (propriedade.ferramentasMaquinario) document.getElementById('ferramentasMaquinario').value = propriedade.ferramentasMaquinario;
+            if (propriedade.infraestrutura) document.getElementById('infraestrutura').value = propriedade.infraestrutura;
+            if (propriedade.maoObraInicial) document.getElementById('maoObraInicial').value = propriedade.maoObraInicial;
+            calcularInvestimentoTotal();
+        }
+
+        // Funções de investimentos
         function adicionarInvestimento() {
             const data = document.getElementById('dataInvestimento').value;
             const descricao = document.getElementById('descricaoInvestimento').value;
@@ -1212,7 +1376,7 @@
             const tipo = document.getElementById('tipoInvestimento').value;
             const safra = document.getElementById('safraInvestimento').value;
 
-            if (!data || !descricao || !valor || valor <= 0) {
+            if (!data || !descricao || !valor) {
                 alert('Por favor, preencha todos os campos obrigatórios!');
                 return;
             }
@@ -1230,42 +1394,42 @@
             dadosInvestimentos.push(investimento);
             atualizarTabelaInvestimentos();
             atualizarGraficosInvestimentos();
-            
+
             // Limpar formulário
             document.getElementById('dataInvestimento').value = '';
             document.getElementById('descricaoInvestimento').value = '';
             document.getElementById('valorInvestimento').value = '';
             document.getElementById('safraInvestimento').value = '';
-            
+
             salvarDados();
         }
 
         function atualizarTabelaInvestimentos() {
-            const tbody = document.getElementById('tabelaInvestimentos');
-            tbody.innerHTML = '';
+            const tabela = document.getElementById('tabelaInvestimentos');
+            tabela.innerHTML = '';
 
-            dadosInvestimentos.forEach(investimento => {
-                const row = tbody.insertRow();
+            dadosInvestimentos.forEach(item => {
+                const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td class="border border-gray-300 p-2">${formatarData(investimento.data)}</td>
-                    <td class="border border-gray-300 p-2">${investimento.descricao}</td>
-                    <td class="border border-gray-300 p-2">${investimento.categoria}</td>
-                    <td class="border border-gray-300 p-2">${formatarMoeda(investimento.valor)}</td>
-                    <td class="border border-gray-300 p-2">${investimento.tipo}</td>
-                    <td class="border border-gray-300 p-2">${investimento.safra}</td>
-                    <td class="border border-gray-300 p-2">
-                        <button onclick="removerInvestimento(${investimento.id})" 
-                                class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">
+                    <td class="border border-gray-300 p-2 md:p-3">${formatarData(item.data)}</td>
+                    <td class="border border-gray-300 p-2 md:p-3">${item.descricao}</td>
+                    <td class="border border-gray-300 p-2 md:p-3">${item.categoria}</td>
+                    <td class="border border-gray-300 p-2 md:p-3">${formatarMoeda(item.valor)}</td>
+                    <td class="border border-gray-300 p-2 md:p-3">${item.tipo}</td>
+                    <td class="border border-gray-300 p-2 md:p-3">${item.safra}</td>
+                    <td class="border border-gray-300 p-2 md:p-3">
+                        <button onclick="removerInvestimento(${item.id})" class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600">
                             <i class="fas fa-trash"></i>
                         </button>
                     </td>
                 `;
+                tabela.appendChild(row);
             });
         }
 
         function removerInvestimento(id) {
-            if (confirm('Deseja realmente remover este investimento?')) {
-                dadosInvestimentos = dadosInvestimentos.filter(inv => inv.id !== id);
+            if (confirm('Tem certeza que deseja remover este investimento?')) {
+                dadosInvestimentos = dadosInvestimentos.filter(item => item.id !== id);
                 atualizarTabelaInvestimentos();
                 atualizarGraficosInvestimentos();
                 salvarDados();
@@ -1274,74 +1438,86 @@
 
         function atualizarGraficosInvestimentos() {
             // Gráfico por categoria
-            const categoriasMap = {};
-            dadosInvestimentos.forEach(inv => {
-                categoriasMap[inv.categoria] = (categoriasMap[inv.categoria] || 0) + inv.valor;
+            const categorias = {};
+            dadosInvestimentos.forEach(item => {
+                categorias[item.categoria] = (categorias[item.categoria] || 0) + item.valor;
             });
 
             const ctxCategoria = document.getElementById('graficoInvestimentosCategoria');
-            if (ctxCategoria) {
-                new Chart(ctxCategoria, {
-                    type: 'doughnut',
-                    data: {
-                        labels: Object.keys(categoriasMap),
-                        datasets: [{
-                            data: Object.values(categoriasMap),
-                            backgroundColor: [
-                                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
-                                '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF'
-                            ]
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false
-                    }
-                });
-            }
+            if (window.graficoCategoria) window.graficoCategoria.destroy();
+
+            window.graficoCategoria = new Chart(ctxCategoria, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(categorias),
+                    datasets: [{
+                        data: Object.values(categorias),
+                        backgroundColor: ['#10B981', '#3B82F6', '#EF4444', '#F59E0B', '#8B5CF6', '#06B6D4', '#84CC16']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
 
             // Gráfico mensal
-            const mesesMap = {};
-            dadosInvestimentos.forEach(inv => {
-                const mes = inv.data.substring(0, 7);
-                mesesMap[mes] = (mesesMap[mes] || 0) + inv.valor;
+            const meses = {};
+            dadosInvestimentos.forEach(item => {
+                const mes = item.data.substring(0, 7);
+                meses[mes] = (meses[mes] || 0) + item.valor;
             });
 
             const ctxMensal = document.getElementById('graficoInvestimentosMensal');
-            if (ctxMensal) {
-                new Chart(ctxMensal, {
-                    type: 'bar',
-                    data: {
-                        labels: Object.keys(mesesMap),
-                        datasets: [{
-                            label: 'Investimentos',
-                            data: Object.values(mesesMap),
-                            backgroundColor: '#36A2EB'
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false
+            if (window.graficoMensal) window.graficoMensal.destroy();
+
+            window.graficoMensal = new Chart(ctxMensal, {
+                type: 'line',
+                data: {
+                    labels: Object.keys(meses).sort(),
+                    datasets: [{
+                        label: 'Investimentos Mensais',
+                        data: Object.keys(meses).sort().map(mes => meses[mes]),
+                        borderColor: '#10B981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function (value) {
+                                    return 'R$ ' + value.toLocaleString('pt-BR');
+                                }
+                            }
+                        }
                     }
-                });
-            }
+                }
+            });
         }
 
-        // ============= FUNÇÕES DE PRODUÇÃO =============
-        
+        // Funções de produção
         function calcularProducao() {
-            const mandiocaColhida = parseFloat(document.getElementById('mandiocaColhida').value) || 0;
-            const farinhaProduzida = parseFloat(document.getElementById('farinhaProduzida').value) || 0;
-            const custoSafra = parseFloat(document.getElementById('custoSafra').value) || 0;
-            const areaPlantada = parseFloat(document.getElementById('areaPlantada').value) || 1;
+            const mandioca = parseFloat(document.getElementById('mandiocaColhida').value) || 0;
+            const farinha = parseFloat(document.getElementById('farinhaProduzida').value) || 0;
+            const custo = parseFloat(document.getElementById('custoSafra').value) || 0;
+            const area = parseFloat(document.getElementById('areaPlantada').value) || 0;
 
-            const eficiencia = mandiocaColhida > 0 ? (farinhaProduzida / mandiocaColhida * 100).toFixed(2) : 0;
-            const custoPorKg = farinhaProduzida > 0 ? (custoSafra / farinhaProduzida).toFixed(2) : 0;
-            const custoPorHa = areaPlantada > 0 ? (custoSafra / areaPlantada).toFixed(2) : 0;
+            // Eficiência de conversão
+            const eficiencia = mandioca > 0 ? ((farinha / mandioca) * 100).toFixed(1) + '%' : '0%';
+            document.getElementById('eficienciaConversao').value = eficiencia;
 
-            document.getElementById('eficienciaConversao').value = `${eficiencia}%`;
-            document.getElementById('custoPorKg').value = `R$ ${custoPorKg}`;
-            document.getElementById('custoPorHa').value = `R$ ${custoPorHa}`;
+            // Custo por kg
+            const custoPorKg = farinha > 0 ? (custo / farinha).toFixed(2) : '0.00';
+            document.getElementById('custoPorKg').value = 'R$ ' + custoPorKg;
+
+            // Custo por hectare
+            const custoPorHa = area > 0 ? (custo / area).toFixed(2) : '0.00';
+            document.getElementById('custoPorHa').value = 'R$ ' + custoPorHa;
         }
 
         function adicionarProducao() {
@@ -1357,8 +1533,9 @@
                 return;
             }
 
-            const eficiencia = (farinhaProduzida / mandiocaColhida * 100).toFixed(2);
+            const eficiencia = ((farinhaProduzida / mandiocaColhida) * 100).toFixed(1);
             const custoPorKg = (custoSafra / farinhaProduzida).toFixed(2);
+            const custoPorHa = (custoSafra / areaPlantada).toFixed(2);
 
             const producao = {
                 id: Date.now(),
@@ -1369,13 +1546,14 @@
                 farinhaProduzida,
                 custoSafra,
                 eficiencia,
-                custoPorKg
+                custoPorKg,
+                custoPorHa
             };
 
             dadosProducao.push(producao);
             atualizarTabelaProducao();
             atualizarGraficoProducao();
-            
+
             // Limpar formulário
             document.getElementById('dataPlantio').value = '';
             document.getElementById('dataColheita').value = '';
@@ -1386,38 +1564,38 @@
             document.getElementById('eficienciaConversao').value = '';
             document.getElementById('custoPorKg').value = '';
             document.getElementById('custoPorHa').value = '';
-            
+
             salvarDados();
         }
 
         function atualizarTabelaProducao() {
-            const tbody = document.getElementById('tabelaProducao');
-            tbody.innerHTML = '';
+            const tabela = document.getElementById('tabelaProducao');
+            tabela.innerHTML = '';
 
-            dadosProducao.forEach(producao => {
-                const row = tbody.insertRow();
+            dadosProducao.forEach(item => {
+                const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td class="border border-gray-300 p-2">${formatarData(producao.dataPlantio)}</td>
-                    <td class="border border-gray-300 p-2">${formatarData(producao.dataColheita)}</td>
-                    <td class="border border-gray-300 p-2">${producao.areaPlantada} ha</td>
-                    <td class="border border-gray-300 p-2">${producao.mandiocaColhida.toLocaleString()} kg</td>
-                    <td class="border border-gray-300 p-2">${producao.farinhaProduzida.toLocaleString()} kg</td>
-                    <td class="border border-gray-300 p-2">${producao.eficiencia}%</td>
-                    <td class="border border-gray-300 p-2">${formatarMoeda(producao.custoSafra)}</td>
-                    <td class="border border-gray-300 p-2">R$ ${producao.custoPorKg}</td>
-                    <td class="border border-gray-300 p-2">
-                        <button onclick="removerProducao(${producao.id})" 
-                                class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">
+                    <td class="border border-gray-300 p-2 md:p-3">${formatarData(item.dataPlantio)}</td>
+                    <td class="border border-gray-300 p-2 md:p-3">${formatarData(item.dataColheita)}</td>
+                    <td class="border border-gray-300 p-2 md:p-3">${item.areaPlantada}</td>
+                    <td class="border border-gray-300 p-2 md:p-3">${item.mandiocaColhida.toLocaleString()}</td>
+                    <td class="border border-gray-300 p-2 md:p-3">${item.farinhaProduzida.toLocaleString()}</td>
+                    <td class="border border-gray-300 p-2 md:p-3">${item.eficiencia}%</td>
+                    <td class="border border-gray-300 p-2 md:p-3">${formatarMoeda(item.custoSafra)}</td>
+                    <td class="border border-gray-300 p-2 md:p-3">R$ ${item.custoPorKg}</td>
+                    <td class="border border-gray-300 p-2 md:p-3">
+                        <button onclick="removerProducao(${item.id})" class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600">
                             <i class="fas fa-trash"></i>
                         </button>
                     </td>
                 `;
+                tabela.appendChild(row);
             });
         }
 
         function removerProducao(id) {
-            if (confirm('Deseja realmente remover esta produção?')) {
-                dadosProducao = dadosProducao.filter(prod => prod.id !== id);
+            if (confirm('Tem certeza que deseja remover esta produção?')) {
+                dadosProducao = dadosProducao.filter(item => item.id !== id);
                 atualizarTabelaProducao();
                 atualizarGraficoProducao();
                 salvarDados();
@@ -1426,29 +1604,40 @@
 
         function atualizarGraficoProducao() {
             const ctx = document.getElementById('graficoProducao');
-            if (ctx && dadosProducao.length > 0) {
-                new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: dadosProducao.map(p => formatarData(p.dataColheita)),
-                        datasets: [{
-                            label: 'Produtividade (kg/ha)',
-                            data: dadosProducao.map(p => p.mandiocaColhida / p.areaPlantada),
-                            borderColor: '#36A2EB',
-                            backgroundColor: 'rgba(54, 162, 235, 0.1)',
-                            tension: 0.4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false
+            if (window.graficoProducaoChart) window.graficoProducaoChart.destroy();
+
+            const labels = dadosProducao.map(item => formatarData(item.dataColheita));
+            const produtividade = dadosProducao.map(item => item.farinhaProduzida / item.areaPlantada);
+
+            window.graficoProducaoChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Produtividade (kg/ha)',
+                        data: produtividade,
+                        backgroundColor: '#10B981',
+                        borderColor: '#059669',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'kg/ha'
+                            }
+                        }
                     }
-                });
-            }
+                }
+            });
         }
 
-        // ============= FUNÇÕES DE ESTOQUE =============
-        
+        // Funções de estoque
         function adicionarInsumo() {
             const nome = document.getElementById('nomeInsumo').value;
             const quantidade = parseFloat(document.getElementById('quantidadeInsumo').value);
@@ -1471,13 +1660,13 @@
             dadosEstoque.insumos.push(insumo);
             atualizarListaInsumos();
             atualizarAlertas();
-            
+
             // Limpar formulário
             document.getElementById('nomeInsumo').value = '';
             document.getElementById('quantidadeInsumo').value = '';
             document.getElementById('validadeInsumo').value = '';
             document.getElementById('minimoInsumo').value = '';
-            
+
             salvarDados();
         }
 
@@ -1485,30 +1674,27 @@
             const lista = document.getElementById('listaInsumos');
             lista.innerHTML = '';
 
-            dadosEstoque.insumos.forEach(insumo => {
+            dadosEstoque.insumos.forEach(item => {
                 const div = document.createElement('div');
-                div.className = 'bg-white p-3 rounded border';
+                div.className = 'bg-white p-3 rounded border flex justify-between items-center';
                 div.innerHTML = `
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <h4 class="font-semibold">${insumo.nome}</h4>
-                            <p class="text-sm text-gray-600">Quantidade: ${insumo.quantidade}</p>
-                            <p class="text-sm text-gray-600">Validade: ${formatarData(insumo.validade)}</p>
-                            <p class="text-sm text-gray-600">Mínimo: ${insumo.minimo}</p>
+                    <div>
+                        <div class="font-medium">${item.nome}</div>
+                        <div class="text-sm text-gray-600">
+                            Qtd: ${item.quantidade} | Min: ${item.minimo} | Val: ${formatarData(item.validade)}
                         </div>
-                        <button onclick="removerInsumo(${insumo.id})" 
-                                class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">
-                            <i class="fas fa-trash"></i>
-                        </button>
                     </div>
+                    <button onclick="removerInsumo(${item.id})" class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600">
+                        <i class="fas fa-trash"></i>
+                    </button>
                 `;
                 lista.appendChild(div);
             });
         }
 
         function removerInsumo(id) {
-            if (confirm('Deseja realmente remover este insumo?')) {
-                dadosEstoque.insumos = dadosEstoque.insumos.filter(ins => ins.id !== id);
+            if (confirm('Tem certeza que deseja remover este insumo?')) {
+                dadosEstoque.insumos = dadosEstoque.insumos.filter(item => item.id !== id);
                 atualizarListaInsumos();
                 atualizarAlertas();
                 salvarDados();
@@ -1538,14 +1724,15 @@
 
             dadosEstoque.farinha.push(farinha);
             atualizarListaFarinha();
-            
+            atualizarAlertas();
+
             // Limpar formulário
             document.getElementById('loteId').value = '';
             document.getElementById('quantidadeFarinha').value = '';
             document.getElementById('dataProducaoFarinha').value = '';
             document.getElementById('validadeFarinha').value = '';
             document.getElementById('custoArmazenamento').value = '';
-            
+
             salvarDados();
         }
 
@@ -1553,32 +1740,30 @@
             const lista = document.getElementById('listaFarinha');
             lista.innerHTML = '';
 
-            dadosEstoque.farinha.forEach(farinha => {
+            dadosEstoque.farinha.forEach(item => {
                 const div = document.createElement('div');
-                div.className = 'bg-white p-3 rounded border';
+                div.className = 'bg-white p-3 rounded border flex justify-between items-center';
                 div.innerHTML = `
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <h4 class="font-semibold">Lote: ${farinha.loteId}</h4>
-                            <p class="text-sm text-gray-600">Quantidade: ${farinha.quantidade} kg</p>
-                            <p class="text-sm text-gray-600">Produção: ${formatarData(farinha.dataProducao)}</p>
-                            <p class="text-sm text-gray-600">Validade: ${formatarData(farinha.validade)}</p>
-                            <p class="text-sm text-gray-600">Custo: ${formatarMoeda(farinha.custoArmazenamento)}</p>
+                    <div>
+                        <div class="font-medium">Lote: ${item.loteId}</div>
+                        <div class="text-sm text-gray-600">
+                            ${item.quantidade}kg | Prod: ${formatarData(item.dataProducao)} | Val: ${formatarData(item.validade)}
                         </div>
-                        <button onclick="removerFarinha(${farinha.id})" 
-                                class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">
-                            <i class="fas fa-trash"></i>
-                        </button>
+                        <div class="text-sm text-gray-600">Custo: ${formatarMoeda(item.custoArmazenamento)}</div>
                     </div>
+                    <button onclick="removerFarinha(${item.id})" class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600">
+                        <i class="fas fa-trash"></i>
+                    </button>
                 `;
                 lista.appendChild(div);
             });
         }
 
         function removerFarinha(id) {
-            if (confirm('Deseja realmente remover este lote de farinha?')) {
-                dadosEstoque.farinha = dadosEstoque.farinha.filter(far => far.id !== id);
+            if (confirm('Tem certeza que deseja remover este lote?')) {
+                dadosEstoque.farinha = dadosEstoque.farinha.filter(item => item.id !== id);
                 atualizarListaFarinha();
+                atualizarAlertas();
                 salvarDados();
             }
         }
@@ -1587,73 +1772,57 @@
             const alertas = document.getElementById('alertasEstoque');
             alertas.innerHTML = '';
 
-            // Verificar insumos com estoque baixo
-            dadosEstoque.insumos.forEach(insumo => {
-                if (insumo.quantidade <= insumo.minimo) {
-                    const div = document.createElement('div');
-                    div.className = 'bg-red-100 border border-red-300 text-red-700 p-3 rounded';
-                    div.innerHTML = `
-                        <i class="fas fa-exclamation-triangle mr-2"></i>
-                        <strong>${insumo.nome}</strong> - Estoque baixo! 
-                        Quantidade atual: ${insumo.quantidade}, Mínimo: ${insumo.minimo}
-                    `;
-                    alertas.appendChild(div);
-                }
-            });
-
-            // Verificar produtos próximos ao vencimento
             const hoje = new Date();
             const proximoMes = new Date();
             proximoMes.setMonth(proximoMes.getMonth() + 1);
 
-            dadosEstoque.insumos.forEach(insumo => {
-                const validade = new Date(insumo.validade);
-                if (validade <= proximoMes && validade >= hoje) {
+            // Alertas de insumos
+            dadosEstoque.insumos.forEach(item => {
+                const validade = new Date(item.validade);
+
+                if (item.quantidade <= item.minimo) {
+                    const div = document.createElement('div');
+                    div.className = 'bg-red-100 border border-red-300 text-red-700 p-3 rounded';
+                    div.innerHTML = `<i class="fas fa-exclamation-triangle mr-2"></i>Estoque baixo: ${item.nome} (${item.quantidade} unidades)`;
+                    alertas.appendChild(div);
+                }
+
+                if (validade <= proximoMes) {
                     const div = document.createElement('div');
                     div.className = 'bg-yellow-100 border border-yellow-300 text-yellow-700 p-3 rounded';
-                    div.innerHTML = `
-                        <i class="fas fa-clock mr-2"></i>
-                        <strong>${insumo.nome}</strong> - Próximo ao vencimento! 
-                        Validade: ${formatarData(insumo.validade)}
-                    `;
+                    div.innerHTML = `<i class="fas fa-clock mr-2"></i>Validade próxima: ${item.nome} (${formatarData(item.validade)})`;
                     alertas.appendChild(div);
                 }
             });
 
-            dadosEstoque.farinha.forEach(farinha => {
-                const validade = new Date(farinha.validade);
-                if (validade <= proximoMes && validade >= hoje) {
+            // Alertas de farinha
+            dadosEstoque.farinha.forEach(item => {
+                const validade = new Date(item.validade);
+
+                if (validade <= proximoMes) {
                     const div = document.createElement('div');
                     div.className = 'bg-yellow-100 border border-yellow-300 text-yellow-700 p-3 rounded';
-                    div.innerHTML = `
-                        <i class="fas fa-clock mr-2"></i>
-                        <strong>Lote ${farinha.loteId}</strong> - Próximo ao vencimento! 
-                        Validade: ${formatarData(farinha.validade)}
-                    `;
+                    div.innerHTML = `<i class="fas fa-clock mr-2"></i>Farinha vencendo: Lote ${item.loteId} (${formatarData(item.validade)})`;
                     alertas.appendChild(div);
                 }
             });
 
             if (alertas.children.length === 0) {
                 const div = document.createElement('div');
-                div.className = 'bg-green-100 border border-green-300 text-green-700 p-3 rounded text-center';
-                div.innerHTML = `
-                    <i class="fas fa-check-circle mr-2"></i>
-                    Nenhum alerta de estoque no momento
-                `;
+                div.className = 'bg-green-100 border border-green-300 text-green-700 p-3 rounded';
+                div.innerHTML = '<i class="fas fa-check-circle mr-2"></i>Nenhum alerta de estoque no momento.';
                 alertas.appendChild(div);
             }
         }
 
-        // ============= FUNÇÕES DE PESSOAS =============
-        
+        // Funções de funcionários
         function adicionarFuncionario() {
             const nome = document.getElementById('nomeFuncionario').value;
             const tipo = document.getElementById('tipoFuncionario').value;
             const salario = parseFloat(document.getElementById('salarioFuncionario').value);
             const funcao = document.getElementById('funcaoFuncionario').value;
 
-            if (!nome || !tipo || !salario || !funcao) {
+            if (!nome || !salario || !funcao) {
                 alert('Por favor, preencha todos os campos!');
                 return;
             }
@@ -1671,40 +1840,40 @@
             atualizarTabelaFuncionarios();
             atualizarSelectFuncionarios();
             atualizarResumoRH();
-            
+
             // Limpar formulário
             document.getElementById('nomeFuncionario').value = '';
             document.getElementById('salarioFuncionario').value = '';
             document.getElementById('funcaoFuncionario').value = '';
-            
+
             salvarDados();
         }
 
         function atualizarTabelaFuncionarios() {
-            const tbody = document.getElementById('tabelaFuncionarios');
-            tbody.innerHTML = '';
+            const tabela = document.getElementById('tabelaFuncionarios');
+            tabela.innerHTML = '';
 
-            dadosFuncionarios.forEach(funcionario => {
-                const row = tbody.insertRow();
+            dadosFuncionarios.forEach(item => {
+                const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td class="border border-gray-300 p-2">${funcionario.nome}</td>
-                    <td class="border border-gray-300 p-2">${funcionario.tipo}</td>
-                    <td class="border border-gray-300 p-2">${funcionario.funcao}</td>
-                    <td class="border border-gray-300 p-2">${formatarMoeda(funcionario.salario)}</td>
-                    <td class="border border-gray-300 p-2">${funcionario.horasMes}h</td>
-                    <td class="border border-gray-300 p-2">
-                        <button onclick="removerFuncionario(${funcionario.id})" 
-                                class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">
+                    <td class="border border-gray-300 p-2 md:p-3">${item.nome}</td>
+                    <td class="border border-gray-300 p-2 md:p-3">${item.tipo}</td>
+                    <td class="border border-gray-300 p-2 md:p-3">${item.funcao}</td>
+                    <td class="border border-gray-300 p-2 md:p-3">${formatarMoeda(item.salario)}</td>
+                    <td class="border border-gray-300 p-2 md:p-3">${item.horasMes || 0}h</td>
+                    <td class="border border-gray-300 p-2 md:p-3">
+                        <button onclick="removerFuncionario(${item.id})" class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600">
                             <i class="fas fa-trash"></i>
                         </button>
                     </td>
                 `;
+                tabela.appendChild(row);
             });
         }
 
         function removerFuncionario(id) {
-            if (confirm('Deseja realmente remover este funcionário?')) {
-                dadosFuncionarios = dadosFuncionarios.filter(func => func.id !== id);
+            if (confirm('Tem certeza que deseja remover este funcionário?')) {
+                dadosFuncionarios = dadosFuncionarios.filter(item => item.id !== id);
                 atualizarTabelaFuncionarios();
                 atualizarSelectFuncionarios();
                 atualizarResumoRH();
@@ -1742,46 +1911,49 @@
             };
 
             dadosHoras.push(registro);
-            
-            // Atualizar horas do funcionário
+
+            // Atualizar horas mensais do funcionário
             const funcionario = dadosFuncionarios.find(f => f.id === funcionarioId);
             if (funcionario) {
-                funcionario.horasMes += horas;
+                const mesAtual = new Date().toISOString().substring(0, 7);
+                const horasDoMes = dadosHoras
+                    .filter(h => h.funcionarioId === funcionarioId && h.data.substring(0, 7) === mesAtual)
+                    .reduce((total, h) => total + h.horas, 0);
+                funcionario.horasMes = horasDoMes;
             }
-            
+
             atualizarTabelaFuncionarios();
             atualizarResumoRH();
-            
+
             // Limpar formulário
             document.getElementById('funcionarioHoras').value = '';
             document.getElementById('dataHoras').value = '';
             document.getElementById('horasTrabalhadas').value = '';
-            
+
             salvarDados();
         }
 
         function atualizarResumoRH() {
             const totalFuncionarios = dadosFuncionarios.length;
-            const custoFolha = dadosFuncionarios.reduce((total, func) => total + func.salario, 0);
-            const horasMes = dadosFuncionarios.reduce((total, func) => total + func.horasMes, 0);
+            const custoFolha = dadosFuncionarios.reduce((total, f) => total + f.salario, 0);
+            const horasMes = dadosFuncionarios.reduce((total, f) => total + (f.horasMes || 0), 0);
 
             document.getElementById('totalFuncionarios').textContent = totalFuncionarios;
             document.getElementById('custoFolha').textContent = formatarMoeda(custoFolha);
-            document.getElementById('horasMes').textContent = `${horasMes}h`;
+            document.getElementById('horasMes').textContent = horasMes + 'h';
         }
 
-        // ============= FUNÇÕES DE VENDAS =============
-        
+        // Funções de vendas
         function calcularVenda() {
             const produto = document.getElementById('produtoVenda').value;
             const quantidade = parseFloat(document.getElementById('quantidadeVenda').value) || 0;
             const precoUnitario = parseFloat(document.getElementById('precoUnitario').value) || 0;
 
             const valorTotal = quantidade * precoUnitario;
-            const taxa = produto === 'farinha' ? valorTotal * 0.1 : 0; // 10% de taxa para farinha
+            const taxaProcessamento = valorTotal * 0.03; // 3% de taxa
 
             document.getElementById('valorTotalVenda').value = formatarMoeda(valorTotal);
-            document.getElementById('taxaProcessamento').value = formatarMoeda(taxa);
+            document.getElementById('taxaProcessamento').value = formatarMoeda(taxaProcessamento);
         }
 
         function adicionarVenda() {
@@ -1791,14 +1963,14 @@
             const quantidade = parseFloat(document.getElementById('quantidadeVenda').value);
             const precoUnitario = parseFloat(document.getElementById('precoUnitario').value);
 
-            if (!data || !cliente || !produto || !quantidade || !precoUnitario) {
+            if (!data || !cliente || !quantidade || !precoUnitario) {
                 alert('Por favor, preencha todos os campos!');
                 return;
             }
 
             const valorTotal = quantidade * precoUnitario;
-            const taxa = produto === 'farinha' ? valorTotal * 0.1 : 0;
-            const valorLiquido = valorTotal - taxa;
+            const taxa = valorTotal * 0.03;
+            const liquido = valorTotal - taxa;
 
             const venda = {
                 id: Date.now(),
@@ -1809,15 +1981,14 @@
                 precoUnitario,
                 valorTotal,
                 taxa,
-                valorLiquido
+                liquido
             };
 
             dadosVendas.push(venda);
             atualizarTabelaVendas();
             atualizarResumoVendas();
             atualizarGraficosVendas();
-            atualizarProgressoMeta();
-            
+
             // Limpar formulário
             document.getElementById('dataVenda').value = '';
             document.getElementById('clienteVenda').value = '';
@@ -1825,60 +1996,56 @@
             document.getElementById('precoUnitario').value = '';
             document.getElementById('valorTotalVenda').value = '';
             document.getElementById('taxaProcessamento').value = '';
-            
+
             salvarDados();
         }
 
         function atualizarTabelaVendas() {
-            const tbody = document.getElementById('tabelaVendas');
-            tbody.innerHTML = '';
+            const tabela = document.getElementById('tabelaVendas');
+            tabela.innerHTML = '';
 
-            dadosVendas.forEach(venda => {
-                const row = tbody.insertRow();
+            dadosVendas.forEach(item => {
+                const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td class="border border-gray-300 p-2">${formatarData(venda.data)}</td>
-                    <td class="border border-gray-300 p-2">${venda.cliente}</td>
-                    <td class="border border-gray-300 p-2">${venda.produto}</td>
-                    <td class="border border-gray-300 p-2">${venda.quantidade} kg</td>
-                    <td class="border border-gray-300 p-2">R$ ${venda.precoUnitario.toFixed(2)}</td>
-                    <td class="border border-gray-300 p-2">${formatarMoeda(venda.valorTotal)}</td>
-                    <td class="border border-gray-300 p-2">${formatarMoeda(venda.taxa)}</td>
-                    <td class="border border-gray-300 p-2">${formatarMoeda(venda.valorLiquido)}</td>
-                    <td class="border border-gray-300 p-2">
-                        <button onclick="removerVenda(${venda.id})" 
-                                class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">
+                    <td class="border border-gray-300 p-2 md:p-3">${formatarData(item.data)}</td>
+                    <td class="border border-gray-300 p-2 md:p-3">${item.cliente}</td>
+                    <td class="border border-gray-300 p-2 md:p-3">${item.produto}</td>
+                    <td class="border border-gray-300 p-2 md:p-3">${item.quantidade}kg</td>
+                    <td class="border border-gray-300 p-2 md:p-3">${formatarMoeda(item.precoUnitario)}</td>
+                    <td class="border border-gray-300 p-2 md:p-3">${formatarMoeda(item.valorTotal)}</td>
+                    <td class="border border-gray-300 p-2 md:p-3">${formatarMoeda(item.taxa)}</td>
+                    <td class="border border-gray-300 p-2 md:p-3">${formatarMoeda(item.liquido)}</td>
+                    <td class="border border-gray-300 p-2 md:p-3">
+                        <button onclick="removerVenda(${item.id})" class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600">
                             <i class="fas fa-trash"></i>
                         </button>
                     </td>
                 `;
+                tabela.appendChild(row);
             });
         }
 
         function removerVenda(id) {
-            if (confirm('Deseja realmente remover esta venda?')) {
-                dadosVendas = dadosVendas.filter(venda => venda.id !== id);
+            if (confirm('Tem certeza que deseja remover esta venda?')) {
+                dadosVendas = dadosVendas.filter(item => item.id !== id);
                 atualizarTabelaVendas();
                 atualizarResumoVendas();
                 atualizarGraficosVendas();
-                atualizarProgressoMeta();
                 salvarDados();
             }
         }
 
         function atualizarResumoVendas() {
-            const faturamentoTotal = dadosVendas.reduce((total, venda) => total + venda.valorLiquido, 0);
+            const faturamentoTotal = dadosVendas.reduce((total, v) => total + v.liquido, 0);
             const totalVendas = dadosVendas.length;
             const ticketMedio = totalVendas > 0 ? faturamentoTotal / totalVendas : 0;
 
-            // Encontrar melhor cliente
-            const clientesMap = {};
-            dadosVendas.forEach(venda => {
-                clientesMap[venda.cliente] = (clientesMap[venda.cliente] || 0) + venda.valorLiquido;
+            // Melhor cliente
+            const clientes = {};
+            dadosVendas.forEach(v => {
+                clientes[v.cliente] = (clientes[v.cliente] || 0) + v.liquido;
             });
-
-            const melhorCliente = Object.keys(clientesMap).reduce((a, b) => 
-                clientesMap[a] > clientesMap[b] ? a : b, '-'
-            );
+            const melhorCliente = Object.keys(clientes).reduce((a, b) => clientes[a] > clientes[b] ? a : b, '-');
 
             document.getElementById('faturamentoTotal').textContent = formatarMoeda(faturamentoTotal);
             document.getElementById('totalVendas').textContent = totalVendas;
@@ -1887,73 +2054,95 @@
         }
 
         function atualizarGraficosVendas() {
-            // Vendas por produto
-            const produtosMap = {};
-            dadosVendas.forEach(venda => {
-                produtosMap[venda.produto] = (produtosMap[venda.produto] || 0) + venda.valorLiquido;
+            // Gráfico por produto
+            const produtos = {};
+            dadosVendas.forEach(item => {
+                produtos[item.produto] = (produtos[item.produto] || 0) + item.liquido;
             });
 
             const ctxProduto = document.getElementById('graficoVendasProduto');
-            if (ctxProduto) {
-                new Chart(ctxProduto, {
-                    type: 'doughnut',
-                    data: {
-                        labels: Object.keys(produtosMap),
-                        datasets: [{
-                            data: Object.values(produtosMap),
-                            backgroundColor: ['#36A2EB', '#FF6384']
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false
-                    }
-                });
-            }
+            if (window.graficoVendasProdutoChart) window.graficoVendasProdutoChart.destroy();
 
-            // Evolução das vendas
-            const mesesMap = {};
-            dadosVendas.forEach(venda => {
-                const mes = venda.data.substring(0, 7);
-                mesesMap[mes] = (mesesMap[mes] || 0) + venda.valorLiquido;
+            window.graficoVendasProdutoChart = new Chart(ctxProduto, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(produtos),
+                    datasets: [{
+                        data: Object.values(produtos),
+                        backgroundColor: ['#10B981', '#3B82F6']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Gráfico de evolução
+            const meses = {};
+            dadosVendas.forEach(item => {
+                const mes = item.data.substring(0, 7);
+                meses[mes] = (meses[mes] || 0) + item.liquido;
             });
 
             const ctxEvolucao = document.getElementById('graficoVendasEvolucao');
-            if (ctxEvolucao) {
-                new Chart(ctxEvolucao, {
-                    type: 'line',
-                    data: {
-                        labels: Object.keys(mesesMap),
-                        datasets: [{
-                            label: 'Vendas',
-                            data: Object.values(mesesMap),
-                            borderColor: '#36A2EB',
-                            backgroundColor: 'rgba(54, 162, 235, 0.1)',
-                            tension: 0.4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false
+            if (window.graficoVendasEvolucaoChart) window.graficoVendasEvolucaoChart.destroy();
+
+            window.graficoVendasEvolucaoChart = new Chart(ctxEvolucao, {
+                type: 'line',
+                data: {
+                    labels: Object.keys(meses).sort(),
+                    datasets: [{
+                        label: 'Vendas Mensais',
+                        data: Object.keys(meses).sort().map(mes => meses[mes]),
+                        borderColor: '#10B981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function (value) {
+                                    return formatarMoeda(value);
+                                }
+                            }
+                        }
                     }
-                });
-            }
+                }
+            });
         }
 
-        // ============= FUNÇÕES DO DASHBOARD =============
-        
+        // Funções do dashboard
         function atualizarDashboard() {
-            const faturamento = dadosVendas.reduce((total, venda) => total + venda.valorLiquido, 0);
-            const custos = dadosInvestimentos.reduce((total, inv) => total + inv.valor, 0);
-            const lucroLiquido = faturamento - custos;
-            const roi = custos > 0 ? (lucroLiquido / custos * 100) : 0;
-            const margem = faturamento > 0 ? (lucroLiquido / faturamento * 100) : 0;
+            const faturamento = dadosVendas.reduce((total, v) => total + v.liquido, 0);
+            const investimentos = dadosInvestimentos.reduce((total, i) => total + i.valor, 0);
+            const custoProducao = dadosProducao.reduce((total, p) => total + p.custoSafra, 0);
+            const custoFolha = dadosFuncionarios.reduce((total, f) => total + f.salario, 0) * 12; // Anual
+
+            const custoTotal = investimentos + custoProducao + custoFolha;
+            const lucro = faturamento - custoTotal;
+            const roi = investimentos > 0 ? ((lucro / investimentos) * 100) : 0;
+            const margem = faturamento > 0 ? ((lucro / faturamento) * 100) : 0;
+            const pontoEquilibrio = margem > 0 ? (custoTotal / (margem / 100)) : 0;
 
             document.getElementById('dashFaturamento').textContent = formatarMoeda(faturamento);
-            document.getElementById('dashLucro').textContent = formatarMoeda(lucroLiquido);
-            document.getElementById('dashROI').textContent = `${roi.toFixed(1)}%`;
-            document.getElementById('dashMargem').textContent = `${margem.toFixed(1)}%`;
-            document.getElementById('dashPontoEquilibrio').textContent = formatarMoeda(custos);
+            document.getElementById('dashLucro').textContent = formatarMoeda(lucro);
+            document.getElementById('dashROI').textContent = roi.toFixed(1) + '%';
+            document.getElementById('dashMargem').textContent = margem.toFixed(1) + '%';
+            document.getElementById('dashPontoEquilibrio').textContent = formatarMoeda(pontoEquilibrio);
+
+            // Atualizar progresso da meta
+            const meta = 1000000;
+            const progresso = (faturamento / meta) * 100;
+            document.getElementById('metaProgress').textContent = formatarMoeda(faturamento);
+            document.getElementById('progressBar').style.width = Math.min(progresso, 100) + '%';
+            document.getElementById('progressBarDash').style.width = Math.min(progresso, 100) + '%';
+            document.getElementById('progressoTexto').textContent = progresso.toFixed(1) + '% da Meta';
 
             atualizarGraficoEvolucaoFinanceira();
             atualizarGraficoDistribuicaoCustos();
@@ -1961,46 +2150,47 @@
 
         function atualizarGraficoEvolucaoFinanceira() {
             const ctx = document.getElementById('graficoEvolucaoFinanceira');
-            if (ctx) {
-                // Dados mensais de receitas e custos
-                const mesesReceitas = {};
-                const mesesCustos = {};
+            if (window.graficoEvolucaoChart) window.graficoEvolucaoChart.destroy();
 
-                dadosVendas.forEach(venda => {
-                    const mes = venda.data.substring(0, 7);
-                    mesesReceitas[mes] = (mesesReceitas[mes] || 0) + venda.valorLiquido;
-                });
+            // Dados mensais de receitas e custos
+            const mesesReceitas = {};
+            const mesesCustos = {};
 
-                dadosInvestimentos.forEach(inv => {
-                    const mes = inv.data.substring(0, 7);
-                    mesesCustos[mes] = (mesesCustos[mes] || 0) + inv.valor;
-                });
+            dadosVendas.forEach(v => {
+                const mes = v.data.substring(0, 7);
+                mesesReceitas[mes] = (mesesReceitas[mes] || 0) + v.liquido;
+            });
 
-                const todosOsMeses = [...new Set([...Object.keys(mesesReceitas), ...Object.keys(mesesCustos)])].sort();
+            dadosInvestimentos.forEach(i => {
+                const mes = i.data.substring(0, 7);
+                mesesCustos[mes] = (mesesCustos[mes] || 0) + i.valor;
+            });
 
-                new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: todosOsMeses,
-                        datasets: [{
-                            label: 'Receitas',
-                            data: todosOsMeses.map(mes => mesesReceitas[mes] || 0),
-                            borderColor: '#36A2EB',
-                            backgroundColor: 'rgba(54, 162, 235, 0.1)'
-                        }, {
-                            label: 'Custos',
-                            data: todosOsMeses.map(mes => mesesCustos[mes] || 0),
-                            borderColor: '#FF6384',
-                            backgroundColor: 'rgba(255, 99, 132, 0.1)'
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false
-                    }
-                });
-            }
+            const todosOsMeses = [...new Set([...Object.keys(mesesReceitas), ...Object.keys(mesesCustos)])].sort();
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: todosOsMeses,
+                    datasets: [{
+                        label: 'Receitas',
+                        data: todosOsMeses.map(mes => mesesReceitas[mes] || 0),
+                        borderColor: '#36A2EB',
+                        backgroundColor: 'rgba(54, 162, 235, 0.1)'
+                    }, {
+                        label: 'Custos',
+                        data: todosOsMeses.map(mes => mesesCustos[mes] || 0),
+                        borderColor: '#FF6384',
+                        backgroundColor: 'rgba(255, 99, 132, 0.1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
         }
+
 
         function atualizarGraficoDistribuicaoCustos() {
             const ctx = document.getElementById('graficoDistribuicaoCustos');
@@ -2042,7 +2232,7 @@
         }
 
         // ============= FUNÇÕES DE PROJEÇÕES =============
-        
+
         function calcularCenarios() {
             const areaTotal = parseFloat(document.getElementById('areaHa')?.value) || 10; // Padrão 10ha
 
@@ -2050,7 +2240,7 @@
             const prodConservador = parseFloat(document.getElementById('prodConservador').value);
             const precoMandiocaConservador = parseFloat(document.getElementById('precoMandiocaConservador').value);
             const precoFarinhaConservador = parseFloat(document.getElementById('precoFarinhaConservador').value);
-            
+
             const receitaConservador = areaTotal * (
                 (prodConservador * 0.7 * precoMandiocaConservador) + // 70% mandioca
                 (prodConservador * 0.3 * 0.25 * precoFarinhaConservador) // 30% vira farinha (conversão 25%)
@@ -2060,7 +2250,7 @@
             const prodRealista = parseFloat(document.getElementById('prodRealista').value);
             const precoMandiocaRealista = parseFloat(document.getElementById('precoMandiocaRealista').value);
             const precoFarinhaRealista = parseFloat(document.getElementById('precoFarinhaRealista').value);
-            
+
             const receitaRealista = areaTotal * (
                 (prodRealista * 0.6 * precoMandiocaRealista) +
                 (prodRealista * 0.4 * 0.25 * precoFarinhaRealista)
@@ -2070,7 +2260,7 @@
             const prodOtimista = parseFloat(document.getElementById('prodOtimista').value);
             const precoMandiocaOtimista = parseFloat(document.getElementById('precoMandiocaOtimista').value);
             const precoFarinhaOtimista = parseFloat(document.getElementById('precoFarinhaOtimista').value);
-            
+
             const receitaOtimista = areaTotal * (
                 (prodOtimista * 0.5 * precoMandiocaOtimista) +
                 (prodOtimista * 0.5 * 0.25 * precoFarinhaOtimista)
@@ -2086,7 +2276,7 @@
         function calcularExpansao() {
             const metaFaturamento = parseFloat(document.getElementById('metaFaturamento').value);
             const faturamentoPorHa = parseFloat(document.getElementById('faturamentoPorHa').value);
-            
+
             const areaNecessaria = metaFaturamento / faturamentoPorHa;
             const investimentoAdicional = areaNecessaria * 25000; // R$ 25.000 por hectare
 
@@ -2140,7 +2330,7 @@
         }
 
         // ============= FUNÇÕES UTILITÁRIAS =============
-        
+
         function formatarMoeda(valor) {
             return new Intl.NumberFormat('pt-BR', {
                 style: 'currency',
@@ -2161,4 +2351,5 @@
         }, 1000);
     </script>
 </body>
+
 </html>
