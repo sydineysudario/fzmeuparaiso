@@ -1100,6 +1100,64 @@
             initializeSystem();
         }, 1000);
 
+        // Função utilitária para prevenir múltiplos cliques
+        function debounceButton(button, func, delay = 1000) {
+            let timeout;
+            return function (...args) {
+                if (button.disabled) return;
+
+                button.disabled = true;
+                button.style.opacity = '0.7';
+
+                clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                    button.disabled = false;
+                    button.style.opacity = '1';
+                }, delay);
+
+                return func.apply(this, args);
+            };
+        }
+
+        // Função para validar e formatar campos monetários
+        function validarCampoMonetario(input) {
+            const valor = parseFloat(input.value);
+            if (isNaN(valor) || valor < 0) {
+                input.value = 0;
+                input.style.borderColor = '#EF4444'; // Vermelho para erro
+                setTimeout(() => {
+                    input.style.borderColor = '';
+                }, 2000);
+                return 0;
+            }
+            input.style.borderColor = '#10B981'; // Verde para sucesso
+            setTimeout(() => {
+                input.style.borderColor = '';
+            }, 1000);
+            return valor;
+        }
+
+        // Aplicar validação em todos os campos monetários
+        function aplicarValidacaoMonetaria() {
+            const camposMonetarios = [
+                'valorTerra', 'limpezaTerreno', 'insumosAgricolas',
+                'ferramentasMaquinario', 'infraestrutura', 'maoObraInicial',
+                'valorInvestimento', 'custoSafra', 'custoArmazenamento',
+                'salarioFuncionario', 'precoUnitario', 'precoConservador',
+                'precoRealista', 'precoOtimista', 'metaFaturamento'
+            ];
+
+            camposMonetarios.forEach(id => {
+                const campo = document.getElementById(id);
+                if (campo) {
+                    campo.addEventListener('blur', () => validarCampoMonetario(campo));
+                    campo.step = '0.01';
+                    campo.min = '0';
+                }
+            });
+        }
+
+
         function initializeSystem() {
             // Verificar autenticação
             window.firebaseAuth.onAuthStateChanged(window.auth, (user) => {
@@ -1108,6 +1166,7 @@
                     document.getElementById('currentUser').textContent = currentUser;
                     showMainSystem();
                     carregarDados();
+                    aplicarValidacaoMonetaria();
                 } else {
                     showLoginScreen();
                 }
@@ -1324,6 +1383,7 @@
             }
         }
 
+
         async function carregarDados() {
             if (!currentUser) return;
 
@@ -1361,10 +1421,19 @@
 
                     // Aguardar um momento para o DOM estar pronto e então atualizar o dashboard
                     setTimeout(() => {
+                        console.log('Iniciando atualização do dashboard após carregamento...');
                         atualizarDashboard();
-                        calcularCenarios();
-                        calcularExpansao();
-                    }, 500);
+
+                        // Aguardar um pouco mais para gráficos
+                        setTimeout(() => {
+                            try {
+                                if (typeof calcularCenarios === 'function') calcularCenarios();
+                                if (typeof calcularExpansao === 'function') calcularExpansao();
+                            } catch (error) {
+                                console.warn('Erro ao calcular cenários/expansão:', error);
+                            }
+                        }, 200);
+                    }, 300);
 
                     // Configurar listeners para campos carregados
                     setupAutoSaveListeners();
@@ -1379,6 +1448,7 @@
                 console.error('Erro ao carregar dados:', error);
             }
         }
+
 
         // Navegação entre abas
         function switchTab(tabName) {
@@ -1491,6 +1561,7 @@
             atualizarTabelaInvestimentos();
             atualizarGraficosInvestimentos();
             atualizarDashboard();
+            forcarAtualizacaoCompleta();
 
             // Limpar formulário
             document.getElementById('dataInvestimento').value = '';
@@ -1652,6 +1723,7 @@
             atualizarTabelaProducao();
             atualizarGraficoProducao();
             atualizarDashboard();
+            forcarAtualizacaoCompleta();
 
             // Limpar formulário
             document.getElementById('dataPlantio').value = '';
@@ -2093,6 +2165,7 @@
             atualizarResumoVendas();
             atualizarGraficosVendas();
             atualizarDashboard();
+            forcarAtualizacaoCompleta();
 
             // Limpar formulário
             document.getElementById('dataVenda').value = '';
@@ -2164,61 +2237,519 @@
             atualizarProgressoMeta();
         }
 
+        // ✅ ADICIONAR ou SUBSTITUIR a função atualizarGraficosVendas():
         function atualizarGraficosVendas() {
-            // Gráfico por produto
-            const produtos = {};
-            dadosVendas.forEach(item => {
-                const valorLiquido = item.liquido || 0;
-                produtos[item.produto] = (produtos[item.produto] || 0) + valorLiquido;
-            });
-
+            // Gráfico de vendas por produto
             const ctxProduto = document.getElementById('graficoVendasProduto');
-            if (window.graficoVendasProdutoChart) window.graficoVendasProdutoChart.destroy();
+            if (ctxProduto) {
+                if (window.graficoVendasProdutoChart) {
+                    window.graficoVendasProdutoChart.destroy();
+                    window.graficoVendasProdutoChart = null;
+                }
 
-            if (Object.keys(produtos).length > 0) {
-                window.graficoVendasProdutoChart = new Chart(ctxProduto, {
-                    type: 'pie',
-                    data: {
-                        labels: Object.keys(produtos),
-                        datasets: [{
-                            data: Object.values(produtos),
-                            backgroundColor: ['#10B981', '#3B82F6']
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false
+                const produtos = {};
+                dadosVendas.forEach(item => {
+                    if (item.produto && item.liquido) {
+                        const produto = item.produto.charAt(0).toUpperCase() + item.produto.slice(1);
+                        produtos[produto] = (produtos[produto] || 0) + item.liquido;
                     }
                 });
+
+                if (Object.keys(produtos).length > 0) {
+                    window.graficoVendasProdutoChart = new Chart(ctxProduto, {
+                        type: 'pie',
+                        data: {
+                            labels: Object.keys(produtos),
+                            datasets: [{
+                                data: Object.values(produtos),
+                                backgroundColor: ['#10B981', '#3B82F6', '#F59E0B', '#EF4444']
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: 'Vendas por Produto'
+                                }
+                            }
+                        }
+                    });
+                }
             }
 
-            // Gráfico de evolução
-            const meses = {};
-            dadosVendas.forEach(item => {
-                const mes = item.data.substring(0, 7);
-                const valorLiquido = item.liquido || 0;
-                meses[mes] = (meses[mes] || 0) + valorLiquido;
+            // Gráfico de evolução das vendas
+            const ctxEvolucao = document.getElementById('graficoVendasEvolucao');
+            if (ctxEvolucao) {
+                if (window.graficoVendasEvolucaoChart) {
+                    window.graficoVendasEvolucaoChart.destroy();
+                    window.graficoVendasEvolucaoChart = null;
+                }
+
+                const meses = {};
+                dadosVendas.forEach(item => {
+                    if (item.data && item.liquido) {
+                        const mes = item.data.substring(0, 7);
+                        meses[mes] = (meses[mes] || 0) + item.liquido;
+                    }
+                });
+
+                const mesesOrdenados = Object.keys(meses).sort();
+                if (mesesOrdenados.length > 0) {
+                    window.graficoVendasEvolucaoChart = new Chart(ctxEvolucao, {
+                        type: 'line',
+                        data: {
+                            labels: mesesOrdenados.map(mes => {
+                                const [ano, mesNum] = mes.split('-');
+                                const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
+                                    'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+                                return `${meses[parseInt(mesNum) - 1]}/${ano}`;
+                            }),
+                            datasets: [{
+                                label: 'Vendas Mensais',
+                                data: mesesOrdenados.map(mes => meses[mes]),
+                                borderColor: '#10B981',
+                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: 'Evolução das Vendas'
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        callback: function (value) {
+                                            return formatarMoeda(value);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+        }
+
+
+        // Funções do dashboard (CORRIGIDAS)
+        function atualizarDashboard() {
+            console.log('Atualizando dashboard com dados:', {
+                vendas: dadosVendas.length,
+                investimentos: dadosInvestimentos.length,
+                producao: dadosProducao.length,
+                funcionarios: dadosFuncionarios.length
             });
 
-            const ctxEvolucao = document.getElementById('graficoVendasEvolucao');
-            if (window.graficoVendasEvolucaoChart) window.graficoVendasEvolucaoChart.destroy();
+            // Cálculos financeiros corrigidos
+            const faturamento = dadosVendas.reduce((total, v) => total + (v.liquido || 0), 0);
+            const investimentos = dadosInvestimentos.reduce((total, i) => total + (i.valor || 0), 0);
+            const custoProducao = dadosProducao.reduce((total, p) => total + (p.custoSafra || 0), 0);
+            const custoFolhaMensal = dadosFuncionarios.reduce((total, f) => total + (f.salario || 0), 0);
+            const custoFolhaAnual = custoFolhaMensal * 12;
 
-            if (Object.keys(meses).length > 0) {
-                window.graficoVendasEvolucaoChart = new Chart(ctxEvolucao, {
-                    type: 'line',
+            const custoTotal = investimentos + custoProducao + custoFolhaAnual;
+            const lucro = faturamento - custoTotal;
+            const roi = investimentos > 0 ? ((lucro / investimentos) * 100) : 0;
+            const margem = faturamento > 0 ? ((lucro / faturamento) * 100) : 0;
+            const pontoEquilibrio = margem > 0 ? (custoTotal / (margem / 100)) : 0;
+
+            // Atualizar elementos do dashboard (verificar se existem)
+            const dashFaturamento = document.getElementById('dashFaturamento');
+            const dashLucro = document.getElementById('dashLucro');
+            const dashROI = document.getElementById('dashROI');
+            const dashMargem = document.getElementById('dashMargem');
+            const dashPontoEquilibrio = document.getElementById('dashPontoEquilibrio');
+
+            if (dashFaturamento) dashFaturamento.textContent = formatarMoeda(faturamento);
+            if (dashLucro) dashLucro.textContent = formatarMoeda(lucro);
+            if (dashROI) dashROI.textContent = roi.toFixed(1) + '%';
+            if (dashMargem) dashMargem.textContent = margem.toFixed(1) + '%';
+            if (dashPontoEquilibrio) dashPontoEquilibrio.textContent = formatarMoeda(pontoEquilibrio);
+
+            // Atualizar progresso da meta SEMPRE
+            atualizarProgressoMeta();
+
+            // Atualizar gráficos com verificação de existência
+            setTimeout(() => {
+                try {
+                    atualizarGraficoEvolucaoFinanceira();
+                } catch (error) {
+                    console.warn('Erro ao atualizar gráfico evolução financeira:', error);
+                }
+
+                try {
+                    atualizarGraficoDistribuicaoCustos();
+                } catch (error) {
+                    console.warn('Erro ao atualizar gráfico distribuição custos:', error);
+                }
+
+                try {
+                    atualizarGraficosInvestimentos();
+                } catch (error) {
+                    console.warn('Erro ao atualizar gráficos investimentos:', error);
+                }
+
+                try {
+                    atualizarGraficoProducao();
+                } catch (error) {
+                    console.warn('Erro ao atualizar gráfico produção:', error);
+                }
+
+                try {
+                    atualizarGraficosVendas();
+                } catch (error) {
+                    console.warn('Erro ao atualizar gráficos vendas:', error);
+                }
+            }, 100);
+        }
+
+        // ✅ SUBSTITUIR a função atualizarGraficoEvolucaoFinanceira() existente:
+        function atualizarGraficoEvolucaoFinanceira() {
+            const ctx = document.getElementById('graficoEvolucaoFinanceira');
+            if (!ctx) {
+                console.warn('Elemento graficoEvolucaoFinanceira não encontrado');
+                return;
+            }
+
+            // Destruir gráfico anterior se existir
+            if (window.graficoEvolucaoChart) {
+                window.graficoEvolucaoChart.destroy();
+                window.graficoEvolucaoChart = null;
+            }
+
+            // Organizar dados mensais
+            const mesesReceitas = {};
+            const mesesCustos = {};
+
+            // Processar vendas (receitas)
+            dadosVendas.forEach(v => {
+                if (v.data && v.liquido) {
+                    const mes = v.data.substring(0, 7); // YYYY-MM
+                    mesesReceitas[mes] = (mesesReceitas[mes] || 0) + v.liquido;
+                }
+            });
+
+            // Processar investimentos (custos)
+            dadosInvestimentos.forEach(i => {
+                if (i.data && i.valor) {
+                    const mes = i.data.substring(0, 7); // YYYY-MM
+                    mesesCustos[mes] = (mesesCustos[mes] || 0) + i.valor;
+                }
+            });
+
+            // Obter todos os meses únicos e ordenar
+            const todosOsMeses = [...new Set([...Object.keys(mesesReceitas), ...Object.keys(mesesCustos)])].sort();
+
+            if (todosOsMeses.length === 0) {
+                // Criar gráfico vazio se não há dados
+                const dataAtual = new Date().toISOString().substring(0, 7);
+                todosOsMeses.push(dataAtual);
+            }
+
+            // Criar novo gráfico
+            window.graficoEvolucaoChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: todosOsMeses.map(mes => {
+                        const [ano, mesNum] = mes.split('-');
+                        const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
+                            'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+                        return `${meses[parseInt(mesNum) - 1]}/${ano}`;
+                    }),
+                    datasets: [{
+                        label: 'Receitas',
+                        data: todosOsMeses.map(mes => mesesReceitas[mes] || 0),
+                        borderColor: '#10B981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Custos',
+                        data: todosOsMeses.map(mes => mesesCustos[mes] || 0),
+                        borderColor: '#EF4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Evolução Financeira Mensal'
+                        },
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function (value) {
+                                    return formatarMoeda(value);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+
+
+        // ✅ SUBSTITUIR a função atualizarGraficoDistribuicaoCustos() existente:
+        function atualizarGraficoDistribuicaoCustos() {
+            const ctx = document.getElementById('graficoDistribuicaoCustos');
+            if (!ctx) {
+                console.warn('Elemento graficoDistribuicaoCustos não encontrado');
+                return;
+            }
+
+            // Destruir gráfico anterior se existir
+            if (window.graficoDistribuicaoChart) {
+                window.graficoDistribuicaoChart.destroy();
+                window.graficoDistribuicaoChart = null;
+            }
+
+            // Organizar dados por categoria
+            const categoriasMap = {};
+            dadosInvestimentos.forEach(inv => {
+                if (inv.categoria && inv.valor) {
+                    const categoria = inv.categoria.charAt(0).toUpperCase() + inv.categoria.slice(1);
+                    categoriasMap[categoria] = (categoriasMap[categoria] || 0) + inv.valor;
+                }
+            });
+
+            const labels = Object.keys(categoriasMap);
+            const data = Object.values(categoriasMap);
+
+            if (labels.length === 0) {
+                // Mostrar gráfico vazio se não há dados
+                labels.push('Sem dados');
+                data.push(1);
+            }
+
+            // Criar novo gráfico
+            window.graficoDistribuicaoChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: [
+                            '#10B981', '#3B82F6', '#EF4444', '#F59E0B',
+                            '#8B5CF6', '#06B6D4', '#84CC16', '#F97316'
+                        ],
+                        borderColor: '#FFFFFF',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Distribuição de Custos por Categoria'
+                        },
+                        legend: {
+                            display: true,
+                            position: 'bottom'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    const label = context.label || '';
+                                    const value = formatarMoeda(context.parsed);
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+
+        function atualizarProgressoMeta() {
+            try {
+                const faturamento = dadosVendas.reduce((total, venda) => total + (venda.liquido || 0), 0);
+                const meta = 1000000; // R$ 1.000.000
+                const progresso = Math.min((faturamento / meta) * 100, 100);
+
+                // Elementos do dashboard
+                const metaProgressEl = document.getElementById('metaProgress');
+                const progressBarEl = document.getElementById('progressBar'); // Header
+                const progressBarDashEl = document.getElementById('progressBarDash'); // Dashboard
+                const progressoMetaEl = document.getElementById('progressoMeta');
+                const percentualMetaEl = document.getElementById('percentualMeta');
+
+                // Atualizar valores monetários
+                if (metaProgressEl) metaProgressEl.textContent = formatarMoeda(faturamento);
+
+                // Atualizar barras de progresso (ambas)
+                if (progressBarEl) progressBarEl.style.width = `${progresso}%`;
+                if (progressBarDashEl) progressBarDashEl.style.width = `${progresso}%`;
+                if (progressoMetaEl) progressoMetaEl.style.width = `${progresso}%`;
+
+                // Atualizar percentual
+                if (percentualMetaEl) percentualMetaEl.textContent = `${progresso.toFixed(1)}%`;
+
+                console.log(`Meta atualizada: R$ ${formatarMoeda(faturamento)} / R$ ${formatarMoeda(meta)} (${progresso.toFixed(1)}%)`);
+
+            } catch (error) {
+                console.error('Erro ao atualizar progresso da meta:', error);
+            }
+        }
+
+
+        // ============= FUNÇÕES DE PROJEÇÕES =============
+
+        function calcularCenarios() {
+            try {
+                const areaTotal = parseFloat(document.getElementById('areaHa')?.value) || 10; // Padrão 10ha
+
+                // Cenário Conservador
+                const prodConservador = parseFloat(document.getElementById('prodConservador')?.value) || 15000;
+                const precoConservador = parseFloat(document.getElementById('precoConservador')?.value) || 3.50;
+
+                // Taxa de conversão mandioca para farinha (25% é padrão da indústria)
+                const taxaConversao = 0.25;
+                const receitaConservador = areaTotal * prodConservador * taxaConversao * precoConservador;
+
+                // Cenário Realista
+                const prodRealista = parseFloat(document.getElementById('prodRealista')?.value) || 20000;
+                const precoRealista = parseFloat(document.getElementById('precoRealista')?.value) || 4.00;
+                const receitaRealista = areaTotal * prodRealista * taxaConversao * precoRealista;
+
+                // Cenário Otimista
+                const prodOtimista = parseFloat(document.getElementById('prodOtimista')?.value) || 25000;
+                const precoOtimista = parseFloat(document.getElementById('precoOtimista')?.value) || 4.50;
+                const receitaOtimista = areaTotal * prodOtimista * taxaConversao * precoOtimista;
+
+                // Atualizar resultados
+                const receitaConservadorEl = document.getElementById('receitaConservador');
+                const receitaRealistaEl = document.getElementById('receitaRealista');
+                const receitaOtimistaEl = document.getElementById('receitaOtimista');
+
+                if (receitaConservadorEl) receitaConservadorEl.textContent = formatarMoeda(receitaConservador);
+                if (receitaRealistaEl) receitaRealistaEl.textContent = formatarMoeda(receitaRealista);
+                if (receitaOtimistaEl) receitaOtimistaEl.textContent = formatarMoeda(receitaOtimista);
+
+                // Atualizar gráfico
+                atualizarGraficoProjecoes();
+
+            } catch (error) {
+                console.error('Erro ao calcular cenários:', error);
+            }
+        }
+
+
+        function calcularExpansao() {
+            try {
+                const metaFaturamento = parseFloat(document.getElementById('metaFaturamento')?.value) || 1000000;
+
+                // Calcular faturamento médio por hectare baseado nos cenários
+                const areaAtual = parseFloat(document.getElementById('areaHa')?.value) || 10;
+                const prodMediaPorHa = 20000; // kg/ha - cenário realista
+                const precoMedio = 4.00; // R$/kg - cenário realista
+                const taxaConversao = 0.25; // 25% de conversão para farinha
+
+                const faturamentoPorHa = prodMediaPorHa * taxaConversao * precoMedio;
+                const areaNecessaria = metaFaturamento / faturamentoPorHa;
+                const areaAdicional = Math.max(0, areaNecessaria - areaAtual);
+                const investimentoAdicional = areaAdicional * 25000; // R$ 25.000 por hectare
+
+                // Calcular tempo estimado (baseado em 2 safras por ano)
+                const safrasPorAno = 2;
+                const anosNecessarios = Math.ceil(areaNecessaria / (areaAtual * safrasPorAno));
+                const tempoMeses = Math.max(12, anosNecessarios * 12);
+
+                // Atualizar campos
+                const areaNecessariaEl = document.getElementById('areaNecessaria');
+                const investimentoAdicionalEl = document.getElementById('investimentoAdicional');
+                const tempoMetaEl = document.getElementById('tempoMeta');
+
+                if (areaNecessariaEl) areaNecessariaEl.value = `${areaNecessaria.toFixed(1)} ha`;
+                if (investimentoAdicionalEl) investimentoAdicionalEl.value = formatarMoeda(investimentoAdicional);
+                if (tempoMetaEl) tempoMetaEl.value = `${tempoMeses} meses`;
+
+            } catch (error) {
+                console.error('Erro ao calcular expansão:', error);
+            }
+        }
+
+
+        function atualizarGraficoProjecoes() {
+            const ctx = document.getElementById('graficoProjecoes');
+            if (!ctx) return;
+
+            // Destruir gráfico existente se houver
+            if (window.graficoProjecoesInstance) {
+                window.graficoProjecoesInstance.destroy();
+            }
+
+            try {
+                const areaTotal = parseFloat(document.getElementById('areaHa')?.value) || 10;
+                const taxaConversao = 0.25;
+
+                // Calcular receitas dos cenários
+                const conservador = areaTotal * 15000 * taxaConversao * 3.50;
+                const realista = areaTotal * 20000 * taxaConversao * 4.00;
+                const otimista = areaTotal * 25000 * taxaConversao * 4.50;
+
+                window.graficoProjecoesInstance = new Chart(ctx, {
+                    type: 'bar',
                     data: {
-                        labels: Object.keys(meses).sort(),
+                        labels: ['Conservador', 'Realista', 'Otimista'],
                         datasets: [{
-                            label: 'Vendas Mensais',
-                            data: Object.keys(meses).sort().map(mes => meses[mes]),
-                            borderColor: '#10B981',
-                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                            tension: 0.4
+                            label: 'Receita Anual Projetada (R$)',
+                            data: [conservador, realista, otimista],
+                            backgroundColor: [
+                                'rgba(251, 191, 36, 0.8)',  // Amarelo
+                                'rgba(59, 130, 246, 0.8)',  // Azul
+                                'rgba(34, 197, 94, 0.8)'    // Verde
+                            ],
+                            borderColor: [
+                                'rgb(251, 191, 36)',
+                                'rgb(59, 130, 246)',
+                                'rgb(34, 197, 94)'
+                            ],
+                            borderWidth: 2
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        return 'Receita: ' + formatarMoeda(context.parsed.y);
+                                    }
+                                }
+                            }
+                        },
                         scales: {
                             y: {
                                 beginAtZero: true,
@@ -2231,221 +2762,12 @@
                         }
                     }
                 });
+
+            } catch (error) {
+                console.error('Erro ao atualizar gráfico de projeções:', error);
             }
         }
 
-        // Funções do dashboard (CORRIGIDAS)
-        function atualizarDashboard() {
-            console.log('Atualizando dashboard com dados:', {
-                vendas: dadosVendas.length,
-                investimentos: dadosInvestimentos.length,
-                producao: dadosProducao.length,
-                funcionarios: dadosFuncionarios.length
-            });
-            const faturamento = dadosVendas.reduce((total, v) => total + v.liquido, 0);
-            const investimentos = dadosInvestimentos.reduce((total, i) => total + i.valor, 0);
-            const custoProducao = dadosProducao.reduce((total, p) => total + p.custoSafra, 0);
-            const custoFolha = dadosFuncionarios.reduce((total, f) => total + f.salario, 0) * 12; // Anual
-
-            const custoTotal = investimentos + custoProducao + custoFolha;
-            const lucro = faturamento - custoTotal;
-            const roi = investimentos > 0 ? ((lucro / investimentos) * 100) : 0;
-            const margem = faturamento > 0 ? ((lucro / faturamento) * 100) : 0;
-            const pontoEquilibrio = margem > 0 ? (custoTotal / (margem / 100)) : 0;
-
-            document.getElementById('dashFaturamento').textContent = formatarMoeda(faturamento);
-            document.getElementById('dashLucro').textContent = formatarMoeda(lucro);
-            document.getElementById('dashROI').textContent = roi.toFixed(1) + '%';
-            document.getElementById('dashMargem').textContent = margem.toFixed(1) + '%';
-            document.getElementById('dashPontoEquilibrio').textContent = formatarMoeda(pontoEquilibrio);
-
-            // Atualizar progresso da meta
-            atualizarProgressoMeta();
-
-            atualizarGraficoEvolucaoFinanceira();
-            atualizarGraficoDistribuicaoCustos();
-        }
-
-        function atualizarGraficoEvolucaoFinanceira() {
-            const ctx = document.getElementById('graficoEvolucaoFinanceira');
-            if (window.graficoEvolucaoChart) window.graficoEvolucaoChart.destroy();
-
-            // Dados mensais de receitas e custos
-            const mesesReceitas = {};
-            const mesesCustos = {};
-
-            dadosVendas.forEach(v => {
-                const mes = v.data.substring(0, 7);
-                mesesReceitas[mes] = (mesesReceitas[mes] || 0) + v.liquido;
-            });
-
-            dadosInvestimentos.forEach(i => {
-                const mes = i.data.substring(0, 7);
-                mesesCustos[mes] = (mesesCustos[mes] || 0) + i.valor;
-            });
-
-            const todosOsMeses = [...new Set([...Object.keys(mesesReceitas), ...Object.keys(mesesCustos)])].sort();
-
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: todosOsMeses,
-                    datasets: [{
-                        label: 'Receitas',
-                        data: todosOsMeses.map(mes => mesesReceitas[mes] || 0),
-                        borderColor: '#36A2EB',
-                        backgroundColor: 'rgba(54, 162, 235, 0.1)'
-                    }, {
-                        label: 'Custos',
-                        data: todosOsMeses.map(mes => mesesCustos[mes] || 0),
-                        borderColor: '#FF6384',
-                        backgroundColor: 'rgba(255, 99, 132, 0.1)'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
-            });
-        }
-
-
-        function atualizarGraficoDistribuicaoCustos() {
-            const ctx = document.getElementById('graficoDistribuicaoCustos');
-            if (ctx) {
-                const categoriasMap = {};
-                dadosInvestimentos.forEach(inv => {
-                    categoriasMap[inv.categoria] = (categoriasMap[inv.categoria] || 0) + inv.valor;
-                });
-
-                new Chart(ctx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: Object.keys(categoriasMap),
-                        datasets: [{
-                            data: Object.values(categoriasMap),
-                            backgroundColor: [
-                                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
-                                '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF'
-                            ]
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false
-                    }
-                });
-            }
-        }
-
-        function atualizarProgressoMeta() {
-            const faturamento = dadosVendas.reduce((total, venda) => total + venda.valorLiquido, 0);
-            const meta = 1000000; // R$ 1.000.000
-            const progresso = Math.min((faturamento / meta) * 100, 100);
-
-            document.getElementById('metaProgress').textContent = formatarMoeda(faturamento);
-            document.getElementById('progressBar').style.width = `${progresso}%`;
-            document.getElementById('progressoMeta').style.width = `${progresso}%`;
-            document.getElementById('percentualMeta').textContent = `${progresso.toFixed(1)}%`;
-        }
-
-        // ============= FUNÇÕES DE PROJEÇÕES =============
-
-        function calcularCenarios() {
-            const areaTotal = parseFloat(document.getElementById('areaHa')?.value) || 10; // Padrão 10ha
-
-            // Cenário Conservador
-            const prodConservador = parseFloat(document.getElementById('prodConservador').value);
-            const precoMandiocaConservador = parseFloat(document.getElementById('precoMandiocaConservador').value);
-            const precoFarinhaConservador = parseFloat(document.getElementById('precoFarinhaConservador').value);
-
-            const receitaConservador = areaTotal * (
-                (prodConservador * 0.7 * precoMandiocaConservador) + // 70% mandioca
-                (prodConservador * 0.3 * 0.25 * precoFarinhaConservador) // 30% vira farinha (conversão 25%)
-            );
-
-            // Cenário Realista
-            const prodRealista = parseFloat(document.getElementById('prodRealista').value);
-            const precoMandiocaRealista = parseFloat(document.getElementById('precoMandiocaRealista').value);
-            const precoFarinhaRealista = parseFloat(document.getElementById('precoFarinhaRealista').value);
-
-            const receitaRealista = areaTotal * (
-                (prodRealista * 0.6 * precoMandiocaRealista) +
-                (prodRealista * 0.4 * 0.25 * precoFarinhaRealista)
-            );
-
-            // Cenário Otimista
-            const prodOtimista = parseFloat(document.getElementById('prodOtimista').value);
-            const precoMandiocaOtimista = parseFloat(document.getElementById('precoMandiocaOtimista').value);
-            const precoFarinhaOtimista = parseFloat(document.getElementById('precoFarinhaOtimista').value);
-
-            const receitaOtimista = areaTotal * (
-                (prodOtimista * 0.5 * precoMandiocaOtimista) +
-                (prodOtimista * 0.5 * 0.25 * precoFarinhaOtimista)
-            );
-
-            document.getElementById('resultadoConservador').textContent = formatarMoeda(receitaConservador);
-            document.getElementById('resultadoRealista').textContent = formatarMoeda(receitaRealista);
-            document.getElementById('resultadoOtimista').textContent = formatarMoeda(receitaOtimista);
-
-            atualizarGraficoProjecoes();
-        }
-
-        function calcularExpansao() {
-            const metaFaturamento = parseFloat(document.getElementById('metaFaturamento').value);
-            const faturamentoPorHa = parseFloat(document.getElementById('faturamentoPorHa').value);
-
-            const areaNecessaria = metaFaturamento / faturamentoPorHa;
-            const investimentoAdicional = areaNecessaria * 25000; // R$ 25.000 por hectare
-
-            document.getElementById('areaNecessaria').value = `${areaNecessaria.toFixed(2)} ha`;
-            document.getElementById('investimentoAdicional').value = formatarMoeda(investimentoAdicional);
-        }
-
-        function calcularTempo() {
-            const faturamentoAtual = parseFloat(document.getElementById('faturamentoAtual').value);
-            const crescimentoMensal = parseFloat(document.getElementById('crescimentoMensal').value) / 100;
-            const meta = 1000000 / 12; // Meta mensal
-
-            if (faturamentoAtual > 0 && crescimentoMensal > 0) {
-                const meses = Math.log(meta / faturamentoAtual) / Math.log(1 + crescimentoMensal);
-                document.getElementById('tempoEstimado').value = `${Math.ceil(meses)} meses`;
-                document.getElementById('metaMensal').value = formatarMoeda(meta);
-            } else {
-                document.getElementById('tempoEstimado').value = 'Indefinido';
-                document.getElementById('metaMensal').value = formatarMoeda(meta);
-            }
-        }
-
-        function atualizarGraficoProjecoes() {
-            const ctx = document.getElementById('graficoProjecoes');
-            if (ctx) {
-                const conservador = parseFloat(document.getElementById('resultadoConservador').textContent.replace(/[R$.,\s]/g, '')) || 0;
-                const realista = parseFloat(document.getElementById('resultadoRealista').textContent.replace(/[R$.,\s]/g, '')) || 0;
-                const otimista = parseFloat(document.getElementById('resultadoOtimista').textContent.replace(/[R$.,\s]/g, '')) || 0;
-
-                new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: ['Conservador', 'Realista', 'Otimista'],
-                        datasets: [{
-                            label: 'Projeção Anual (R$)',
-                            data: [conservador, realista, otimista],
-                            backgroundColor: ['#FF6384', '#FFCE56', '#36A2EB']
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            }
-                        }
-                    }
-                });
-            }
-        }
 
         // ============= FUNÇÕES UTILITÁRIAS =============
 
@@ -2467,6 +2789,38 @@
             calcularTempo();
             atualizarAlertas();
         }, 1000);
+
+        function forcarAtualizacaoCompleta() {
+            console.log('Forçando atualização completa do dashboard...');
+
+            // Aguardar um momento para garantir que o DOM está pronto
+            setTimeout(() => {
+                atualizarDashboard();
+
+                // Atualizar também outros gráficos específicos
+                setTimeout(() => {
+                    if (typeof atualizarGraficosInvestimentos === 'function') {
+                        try {
+                            atualizarGraficosInvestimentos();
+                        } catch (error) {
+                            console.warn('Erro ao atualizar gráficos de investimentos:', error);
+                        }
+                    }
+
+                    if (typeof atualizarGraficoProducao === 'function') {
+                        try {
+                            atualizarGraficoProducao();
+                        } catch (error) {
+                            console.warn('Erro ao atualizar gráfico de produção:', error);
+                        }
+                    }
+                }, 100);
+            }, 100);
+        }
+
+        // Chamar esta função sempre que dados importantes forem alterados
+        // Adicionar esta linha no final das funções: adicionarVenda(), adicionarInvestimento(), adicionarProducao()
+        // forcarAtualizacaoCompleta();
     </script>
 </body>
 
